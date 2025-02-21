@@ -6,58 +6,35 @@
 const express = require("express");
 const cloudscraper = require("cloudscraper");
 const path = require("path");
-const ejs = require("ejs");
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
 // ===============================================
-// View Engine Configuration
-// ===============================================
-// Configure Express to render .html files using EJS.
-app.engine("html", ejs.renderFile);
-app.set("view engine", "html");
-app.set("views", path.join(__dirname, "templates"));
-
-// ===============================================
 // API Configuration
 // ===============================================
-// IMPORTANT: Use a valid date (in the past) for which your token is authorized.
+// IMPORTANT: Use a valid past date that your token is authorized for.
 // Using a future date may trigger a 403 error.
 const API_TOKEN =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoicGFzcyIsInNjb3BlIjoiYWZmaWxpYXRlcyIsInVzZXJJZCI6OTQ5NDUsImlhdCI6MTczNzMyNDA1MCwiZXhwIjoxODk1MTEyMDUwfQ.8gmdCP5HKuVul-oA0hQqvzPVluEXUPyQUSeeycV9kJI";
-const API_DATE = "2025-02-16"; // Replace with a valid past date if needed.
+const API_DATE = "2025-02-16"; // Change if needed (must be in the past)
 const API_URL = `https://api.cases.gg/affiliates/detailed-summary/v2/${API_DATE}`;
 
 // ===============================================
 // Data Cache (Top 11 Wagerers)
 // ===============================================
-// This variable will hold the processed top 11 wagerers.
 let dataCache = [];
 
 // ===============================================
 // Fetch Data Function
 // ===============================================
-/*
-  fetchData() sends a GET request to the Cases.gg API using cloudscraper.
-  It mimics a browser request by using a common User-Agent and necessary headers,
-  including the Authorization token. The API response is expected to be an array.
-  
-  Steps:
-  1. Log the request options and send the GET request.
-  2. If the response status is 200, sort the data by the "wagered" field (descending).
-  3. Extract the top 11 entries, mapping each to an object containing:
-       - rank: the placement (1 through 11)
-       - name: the player's name (from the API "name" field)
-       - wager: the wagered amount in dollars and cents (calculated from "wagered")
-  4. Store the processed array in dataCache.
-  5. Log all steps for debugging.
-*/
 async function fetchData() {
   console.log(
     `[${new Date().toISOString()}] INFO: Initiating API data fetch from ${API_URL}`
   );
+
   try {
+    // Build options for cloudscraper.
     const options = {
       method: "GET",
       uri: API_URL,
@@ -67,13 +44,15 @@ async function fetchData() {
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36",
         Accept: "application/json",
         "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Encoding": "gzip, deflate, br",
         Referer: "https://cases.gg/",
         Origin: "https://cases.gg"
       },
-      jar: true, // Enable cookie jar for Cloudflare cookies
-      json: true,
+      jar: true, // Enable cookie jar support
+      json: true, // Automatically parse JSON response
       resolveWithFullResponse: true,
-      simple: false // Do not automatically throw errors on non-2xx responses
+      simple: false,
+      followAllRedirects: true // Follow all redirects (may help with Cloudflare challenges)
     };
 
     console.log(
@@ -84,6 +63,7 @@ async function fetchData() {
       )}`
     );
 
+    // Execute the API request using cloudscraper.
     const response = await cloudscraper(options);
     console.log(
       `[${new Date().toISOString()}] DEBUG: Cloudscraper response status: ${response.statusCode}`
@@ -107,22 +87,24 @@ async function fetchData() {
       );
 
       if (Array.isArray(apiResponse)) {
-        // Sort the API data by "wagered" in descending order (highest wager first)
+        // Sort the API data by "wagered" (highest wager first)
         const sortedData = apiResponse.sort(
           (a, b) => (b.wagered || 0) - (a.wagered || 0)
         );
 
-        // Map the top 11 wagerers into an array of objects.
-        // For each user, "name" is taken from the API "name" field,
-        // and "wager" is computed by converting "wagered" (in cents) to dollars.
-        const topWagerers = sortedData.slice(0, 11).map((user, index) => ({
-          rank: index + 1,
-          name: user.name,
-          wager: `$${(user.wagered / 100).toLocaleString("en-US", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-          })}`
-        }));
+        // Map the top 11 wagerers into an array.
+        // For each user, we use the API "name" field for the player's name,
+        // and "wagered" (converted from cents to dollars) for the wager amount.
+        const topWagerers = sortedData.slice(0, 11).map((user, index) => {
+          return {
+            rank: index + 1,
+            name: user.name || "Unknown",
+            wager: `$${(user.wagered / 100).toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })}`
+          };
+        });
 
         dataCache = topWagerers;
         console.log(
@@ -186,7 +168,7 @@ async function fetchData() {
   }
 }
 
-// Fetch data immediately and then every 90 seconds.
+// Fetch data immediately and then every 90 seconds
 fetchData();
 setInterval(fetchData, 90 * 1000);
 
@@ -203,29 +185,22 @@ app.use((req, res, next) => {
 // ===============================================
 // Serve Static Files and HTML Templates
 // ===============================================
-// Serve static assets from the "static" folder.
+// Serve static assets from the "static" folder
 app.use("/static", express.static(path.join(__dirname, "static")));
 
-// Render index.html from the "templates" folder with the API data injected.
-// Your index.html file (an EJS template) should loop through "topWagerers" to replace placeholder data.
+// Serve index.html from the "templates" folder
 app.get("/", (req, res) => {
-  console.log(
-    `[${new Date().toISOString()}] INFO: Rendering index.html with API data`
-  );
-  res.render("index.html", { topWagerers: dataCache });
+  console.log(`[${new Date().toISOString()}] INFO: Serving index.html`);
+  res.sendFile(path.join(__dirname, "templates", "index.html"));
 });
 
-// Endpoint to serve cached API data as JSON.
+// Endpoint to serve cached API data
 app.get("/data", (req, res) => {
-  console.log(
-    `[${new Date().toISOString()}] INFO: Serving API data cache as JSON`
-  );
+  console.log(`[${new Date().toISOString()}] INFO: Serving API data cache`);
   res.json(dataCache);
 });
 
-// ===============================================
-// 404 Handler: Serve 404.html for any undefined paths.
-// ===============================================
+// Catch-all for undefined paths: serve 404.html from the "templates" folder
 app.use((req, res) => {
   console.warn(
     `[${new Date().toISOString()}] WARNING: 404 Not Found for ${req.url}`
