@@ -13,198 +13,165 @@ const PORT = process.env.PORT || 8080;
 // ===============================================
 // API Configuration
 // ===============================================
-// IMPORTANT: Use a valid past date that your token is authorized for.
-// Using a future date may trigger a 403 error.
+// IMPORTANT: Ensure the date used is in the past and your token is authorized for that range.
+// For example, "2025-02-16" is used here.
 const API_TOKEN =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoicGFzcyIsInNjb3BlIjoiYWZmaWxpYXRlcyIsInVzZXJJZCI6OTQ5NDUsImlhdCI6MTczNzMyNDA1MCwiZXhwIjoxODk1MTEyMDUwfQ.8gmdCP5HKuVul-oA0hQqvzPVluEXUPyQUSeeycV9kJI";
-const API_DATE = "2025-02-16"; // Change if needed (must be in the past)
+const API_DATE = "2025-02-16";
 const API_URL = `https://api.cases.gg/affiliates/detailed-summary/v2/${API_DATE}`;
 
 // ===============================================
 // Data Cache (Top 11 Wagerers)
 // ===============================================
+// We store the top 11 wagerers here as an array of objects.
 let dataCache = [];
+
+// ===============================================
+// Helper Functions
+// ===============================================
+
+/**
+ * Masks a given name so that only the first character is visible,
+ * followed by exactly six asterisks.
+ * For example, "DuggieLovesRed" becomes "D******".
+ *
+ * @param {string} name - The original name.
+ * @returns {string} - The masked name.
+ */
+function maskName(name) {
+  if (typeof name !== "string" || name.length === 0) return "";
+  return name.charAt(0) + "******";
+}
+
+/**
+ * Logs messages to the console with a standardized timestamp and level.
+ *
+ * @param {string} level - The log level (e.g., "info", "debug", "error").
+ * @param {string} message - The message to log.
+ */
+function logMessage(level, message) {
+  console.log(`[${new Date().toISOString()}] [${level.toUpperCase()}]: ${message}`);
+}
 
 // ===============================================
 // Fetch Data Function
 // ===============================================
+/**
+ * Fetches API data from Cases.gg using cloudscraper.
+ * It sorts the data by "wagered" (highest first), extracts the top 11 entries,
+ * masks the names, converts wager amounts from cents to dollars,
+ * and updates the data cache.
+ */
 async function fetchData() {
-  console.log(
-    `[${new Date().toISOString()}] INFO: Initiating API data fetch from ${API_URL}`
-  );
-
+  logMessage("info", `Initiating API data fetch from ${API_URL}`);
   try {
-    // Build options for cloudscraper.
     const options = {
       method: "GET",
       uri: API_URL,
       headers: {
-        Authorization: `Bearer ${API_TOKEN}`,
+        "Authorization": `Bearer ${API_TOKEN}`,
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36",
-        Accept: "application/json",
+        "Accept": "application/json",
         "Accept-Language": "en-US,en;q=0.9",
-        "Accept-Encoding": "gzip, deflate, br",
-        Referer: "https://cases.gg/",
-        Origin: "https://cases.gg"
+        "Referer": "https://cases.gg/",
+        "Origin": "https://cases.gg"
       },
-      jar: true, // Enable cookie jar support
-      json: true, // Automatically parse JSON response
+      json: true,
       resolveWithFullResponse: true,
-      simple: false,
-      followAllRedirects: true // Follow all redirects (may help with Cloudflare challenges)
+      jar: true,
+      simple: false
     };
 
-    console.log(
-      `[${new Date().toISOString()}] DEBUG: Options for cloudscraper:\n${JSON.stringify(
-        options,
-        null,
-        2
-      )}`
-    );
+    logMessage("debug", `Options for cloudscraper:\n${JSON.stringify(options, null, 2)}`);
 
-    // Execute the API request using cloudscraper.
     const response = await cloudscraper(options);
-    console.log(
-      `[${new Date().toISOString()}] DEBUG: Cloudscraper response status: ${response.statusCode}`
-    );
-    console.log(
-      `[${new Date().toISOString()}] DEBUG: Cloudscraper response headers:\n${JSON.stringify(
-        response.headers,
-        null,
-        2
-      )}`
-    );
+    logMessage("debug", `Cloudscraper response status: ${response.statusCode}`);
+    logMessage("debug", `Cloudscraper response headers:\n${JSON.stringify(response.headers, null, 2)}`);
 
     if (response.statusCode === 200) {
       const apiResponse = response.body;
-      console.log(
-        `[${new Date().toISOString()}] INFO: Raw API response:\n${JSON.stringify(
-          apiResponse,
-          null,
-          2
-        )}`
-      );
+      logMessage("info", `Raw API response:\n${JSON.stringify(apiResponse, null, 2)}`);
 
       if (Array.isArray(apiResponse)) {
-        // Sort the API data by "wagered" (highest wager first)
-        const sortedData = apiResponse.sort(
-          (a, b) => (b.wagered || 0) - (a.wagered || 0)
-        );
+        // Sort the API data by "wagered" in descending order (highest wager first)
+        const sortedData = apiResponse.sort((a, b) => (b.wagered || 0) - (a.wagered || 0));
 
-        // Map the top 11 wagerers into an array.
-        // For each user, we use the API "name" field for the player's name,
-        // and "wagered" (converted from cents to dollars) for the wager amount.
-        const topWagerers = sortedData.slice(0, 11).map((user, index) => {
-          return {
-            rank: index + 1,
-            name: user.name || "Unknown",
-            wager: `$${(user.wagered / 100).toLocaleString("en-US", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })}`
-          };
-        });
+        // Map the top 11 wagerers into our desired format.
+        // We use the API "name" field (masked) and convert "wagered" from cents to dollars.
+        const topWagerers = sortedData.slice(0, 11).map((user, index) => ({
+          rank: index + 1,
+          // Mask the name: only show the first letter, followed by six asterisks.
+          name: maskName(user.name),
+          // Convert wagered amount (assumed to be in cents) to dollars.
+          wager: `$${(user.wagered / 100).toLocaleString("en-US", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          })}`
+        }));
 
         dataCache = topWagerers;
-        console.log(
-          `[${new Date().toISOString()}] INFO: Data cache updated:\n${JSON.stringify(
-            dataCache,
-            null,
-            2
-          )}`
-        );
+        logMessage("info", `Data cache updated:\n${JSON.stringify(dataCache, null, 2)}`);
       } else {
-        console.warn(
-          `[${new Date().toISOString()}] WARNING: Unexpected API response format.`
-        );
+        logMessage("warn", "Unexpected API response format.");
         dataCache = { error: "Unexpected API response format" };
       }
     } else {
-      console.error(
-        `[${new Date().toISOString()}] ERROR: Non-200 response from cloudscraper: ${response.statusCode}`
-      );
+      logMessage("error", `Non-200 response from cloudscraper: ${response.statusCode}`);
     }
   } catch (error) {
-    console.error(
-      `[${new Date().toISOString()}] ERROR: Error during cloudscraper fetch: ${error.message}`
-    );
+    logMessage("error", `Error during cloudscraper fetch: ${error.message}`);
     if (error.response) {
-      console.error(
-        `[${new Date().toISOString()}] ERROR: Error response body:\n${JSON.stringify(
-          error.response.body,
-          null,
-          2
-        )}`
-      );
-      console.error(
-        `[${new Date().toISOString()}] ERROR: Error response status: ${error.response.statusCode}`
-      );
-      console.error(
-        `[${new Date().toISOString()}] ERROR: Error response headers:\n${JSON.stringify(
-          error.response.headers,
-          null,
-          2
-        )}`
-      );
+      logMessage("error", `Error response body:\n${JSON.stringify(error.response.body, null, 2)}`);
+      logMessage("error", `Error response status: ${error.response.statusCode}`);
+      logMessage("error", `Error response headers:\n${JSON.stringify(error.response.headers, null, 2)}`);
     }
     if (error.options) {
-      console.error(
-        `[${new Date().toISOString()}] ERROR: Error options:\n${JSON.stringify(
-          error.options,
-          null,
-          2
-        )}`
-      );
+      logMessage("error", `Error options:\n${JSON.stringify(error.options, null, 2)}`);
     }
-    console.error(
-      `[${new Date().toISOString()}] ERROR: Full error object:\n${JSON.stringify(
-        error,
-        null,
-        2
-      )}`
-    );
+    logMessage("error", `Full error object:\n${JSON.stringify(error, null, 2)}`);
     dataCache = { error: error.message };
   }
 }
 
-// Fetch data immediately and then every 90 seconds
+// Immediately fetch data and then schedule fetches every 90 seconds.
 fetchData();
 setInterval(fetchData, 90 * 1000);
 
 // ===============================================
-// Logging Middleware for Incoming Requests
+// Middleware and Routes
 // ===============================================
+
+// Logging middleware for incoming requests.
 app.use((req, res, next) => {
-  console.log(
-    `[${new Date().toISOString()}] REQUEST: ${req.method} ${req.url}`
-  );
+  logMessage("info", `REQUEST: ${req.method} ${req.url}`);
   next();
 });
 
-// ===============================================
-// Serve Static Files and HTML Templates
-// ===============================================
-// Serve static assets from the "static" folder
+// Serve static assets from the "static" folder.
 app.use("/static", express.static(path.join(__dirname, "static")));
 
-// Serve index.html from the "templates" folder
+// Serve index.html from the "templates" folder.
 app.get("/", (req, res) => {
-  console.log(`[${new Date().toISOString()}] INFO: Serving index.html`);
+  logMessage("info", "Serving index.html");
   res.sendFile(path.join(__dirname, "templates", "index.html"));
 });
 
-// Endpoint to serve cached API data
+// Serve apidata.html from the "templates" folder for viewing raw API data.
+app.get("/apidata", (req, res) => {
+  logMessage("info", "Serving apidata.html");
+  res.sendFile(path.join(__dirname, "templates", "apidata.html"));
+});
+
+// Endpoint to serve the cached API data as JSON.
 app.get("/data", (req, res) => {
-  console.log(`[${new Date().toISOString()}] INFO: Serving API data cache`);
+  logMessage("info", "Serving API data cache");
   res.json(dataCache);
 });
 
-// Catch-all for undefined paths: serve 404.html from the "templates" folder
+// Catch-all 404 handler: serve 404.html from the "templates" folder.
 app.use((req, res) => {
-  console.warn(
-    `[${new Date().toISOString()}] WARNING: 404 Not Found for ${req.url}`
-  );
+  logMessage("warn", `404 Not Found: ${req.originalUrl}`);
   res.status(404).sendFile(path.join(__dirname, "templates", "404.html"));
 });
 
@@ -212,7 +179,5 @@ app.use((req, res) => {
 // Start the Express Server
 // ===============================================
 app.listen(PORT, () => {
-  console.log(
-    `[${new Date().toISOString()}] INFO: Express server started on port ${PORT}`
-  );
+  logMessage("info", `Express server started on port ${PORT}`);
 });
