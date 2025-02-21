@@ -257,7 +257,8 @@
         width: auto !important;
       }
   
-      /* Podium: stack the top 3 columns vertically on tiny screens */
+      /* Podium: stack the top 3 columns vertically on tiny screens
+         and force numerical order (1st on top, then 2nd, then 3rd) */
       .podium {
         flex-direction: column !important;
         align-items: center !important;
@@ -268,6 +269,9 @@
         height: auto !important;
         margin-bottom: 20px !important;
       }
+      .podium .first { order: 1 !important; }
+      .podium .second { order: 2 !important; }
+      .podium .third { order: 3 !important; }
   
       /* Other standings: only 1 column so it doesn't get squished */
       .other-standings {
@@ -373,99 +377,50 @@
     /**
      * Function to update the wager race standings by fetching API data.
      * The API data is expected to be an array of user objects.
-     * Each user's name is masked (only the first letter visible, followed by asterisks)
-     * and their wagered amount is formatted into dollars and cents.
+     * Each user's name is masked and their wager is displayed.
      */
     function updateWagerRace() {
       fetch('/data')
         .then(response => response.json())
         .then(data => {
-          console.log("Fetched data:", data);  // Debug: log the data received from the API
+          console.log("Fetched data:", data);
           const top3Container = document.getElementById('top-3-standings');
           const standingsContainer = document.getElementById('wager-standings');
           top3Container.innerHTML = '';
           standingsContainer.innerHTML = '';
 
-          // Check if valid data is received
-          if (Array.isArray(data) && data.length > 0) {
-            // Extract top 3 for the podium section
-            const podium = data.slice(0, 3);
-            top3Container.innerHTML = `
-              <div class="second">
-                <h3>2nd: ${maskName(podium[1].name)}</h3>
-                <p>Wager: ${podium[1].wager}</p>
-              </div>
-              <div class="first">
-                <h3>1st: ${maskName(podium[0].name)}</h3>
-                <p>Wager: ${podium[0].wager}</p>
-              </div>
-              <div class="third">
-                <h3>3rd: ${maskName(podium[2].name)}</h3>
-                <p>Wager: ${podium[2].wager}</p>
-              </div>
-            `;
-            // Populate remaining positions (4th to 11th)
-            const others = data.slice(3, 11);
-            others.forEach((user, index) => {
-              const div = document.createElement('div');
-              div.classList.add('standing');
-              div.innerHTML = `<h3>${index + 4}th: ${maskName(user.name)}</h3><p>Wager: ${user.wager}</p>`;
-              standingsContainer.appendChild(div);
-            });
-          } else {
-            console.warn("No valid data received from API, using placeholder data.");
-            populateWithPlaceholderData();
-          }
+          // Use the API response directly (assumes 11 items are returned)
+          const podium = data.slice(0, 3);
+          top3Container.innerHTML = `
+            <div class="first">
+              <h3>1st: ${maskName(podium[0].name)}</h3>
+              <p>Wager: ${podium[0].wager}</p>
+            </div>
+            <div class="second">
+              <h3>2nd: ${maskName(podium[1].name)}</h3>
+              <p>Wager: ${podium[1].wager}</p>
+            </div>
+            <div class="third">
+              <h3>3rd: ${maskName(podium[2].name)}</h3>
+              <p>Wager: ${podium[2].wager}</p>
+            </div>
+          `;
+          // Populate positions 4 through 11
+          const others = data.slice(3, 11);
+          others.forEach((user, index) => {
+            const div = document.createElement('div');
+            div.classList.add('standing');
+            div.innerHTML = `<h3>${index + 4}th: ${maskName(user.name)}</h3><p>Wager: ${user.wager}</p>`;
+            standingsContainer.appendChild(div);
+          });
         })
         .catch(error => {
           console.error("Error fetching wager data:", error);
-          populateWithPlaceholderData();
+          // In production, you should handle errors appropriately.
         });
     }
 
-    /**
-     * Fallback function to populate standings with placeholder data
-     * in case the API fetch fails.
-     */
-    function populateWithPlaceholderData() {
-      const placeholderData = [
-        { rank: 1, name: "P******", wager: "$10,000.00" },
-        { rank: 2, name: "P******", wager: "$8,500.00" },
-        { rank: 3, name: "P******", wager: "$7,500.00" },
-        { rank: 4, name: "P******", wager: "$7,000.00" },
-        { rank: 5, name: "P******", wager: "$6,500.00" },
-        { rank: 6, name: "P******", wager: "$6,000.00" },
-        { rank: 7, name: "P******", wager: "$5,500.00" },
-        { rank: 8, name: "P******", wager: "$5,000.00" },
-        { rank: 9, name: "P******", wager: "$4,500.00" },
-        { rank: 10, name: "P******", wager: "$4,000.00" },
-        { rank: 11, name: "P******", wager: "$3,500.00" }
-      ];
-      const top3Container = document.getElementById('top-3-standings');
-      const standingsContainer = document.getElementById('wager-standings');
-      top3Container.innerHTML = `
-        <div class="second">
-          <h3>2nd: ${placeholderData[1].name}</h3>
-          <p>Wager: ${placeholderData[1].wager}</p>
-        </div>
-        <div class="first">
-          <h3>1st: ${placeholderData[0].name}</h3>
-          <p>Wager: ${placeholderData[0].wager}</p>
-        </div>
-        <div class="third">
-          <h3>3rd: ${placeholderData[2].name}</h3>
-          <p>Wager: ${placeholderData[2].wager}</p>
-        </div>
-      `;
-      for (let i = 3; i < placeholderData.length; i++) {
-        const div = document.createElement('div');
-        div.classList.add('standing');
-        div.innerHTML = `<h3>${i + 1}th: ${placeholderData[i].name}</h3><p>Wager: ${placeholderData[i].wager}</p>`;
-        standingsContainer.appendChild(div);
-      }
-    }
-
-    // Update the wager race standings every 15 minutes (15 * 60 * 1000 ms)
+    // Update the wager race standings every 15 minutes
     setInterval(updateWagerRace, 15 * 60 * 1000);
     window.onload = updateWagerRace;
   </script>
