@@ -1,12 +1,16 @@
+/**********************************************
+ * server.js (Original with Adjustments for File Structure and Additional Logging)
+ **********************************************/
 const express = require('express');
+const path = require('path');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Parse JSON bodies (if applicable)
+// Parse JSON bodies if needed
 app.use(express.json());
 
 // --- Detailed Logging Middleware (Added) ---
-// This middleware logs request details without altering any existing functionality.
+// Logs request details without altering existing functionality.
 app.use((req, res, next) => {
   console.log(`
 [DETAILED REQUEST LOG]
@@ -23,7 +27,13 @@ Body:      ${JSON.stringify(req.body, null, 2)}
   next();
 });
 
-// --- Existing Routes (Unchanged) ---
+// Serve static files from the "static" folder under the "/static" URL
+app.use('/static', express.static(path.join(__dirname, 'static')));
+
+// Route to serve index.html from the "templates" folder at the root URL
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'templates', 'index.html'));
+});
 
 // Example route to serve API data for wager race standings
 app.get('/data', (req, res) => {
@@ -43,12 +53,10 @@ app.get('/data', (req, res) => {
   res.json(exampleData);
 });
 
-// Serve static files (e.g. index.html, images, etc.)
-// (This should reflect your original static file serving setup)
-app.use(express.static('public'));
-
-// --- Any Other Original Routes or Middleware ---
-// (Preserve any additional code from your original server.js here)
+// Fallback for unmatched routes: serve 404.html from the templates folder
+app.use((req, res) => {
+  res.status(404).sendFile(path.join(__dirname, 'templates', '404.html'));
+});
 
 // Start the server (original startup code)
 app.listen(port, () => {
