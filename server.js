@@ -15,7 +15,6 @@ const PORT = process.env.PORT || 8080;
 // View Engine Configuration
 // ===============================================
 // Configure Express to render .html files using EJS.
-// This allows us to embed dynamic data in our HTML templates.
 app.engine("html", ejs.renderFile);
 app.set("view engine", "html");
 app.set("views", path.join(__dirname, "templates"));
@@ -23,31 +22,36 @@ app.set("views", path.join(__dirname, "templates"));
 // ===============================================
 // API Configuration
 // ===============================================
-// Cases.gg API token and endpoint (wager race starting February 16, 2025)
-// IMPORTANT: Ensure the date used is valid (in the past) for which your token is authorized.
+// IMPORTANT: Use a valid date (in the past) for which your token is authorized.
+// Using a future date may trigger a 403 error.
 const API_TOKEN =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoicGFzcyIsInNjb3BlIjoiYWZmaWxpYXRlcyIsInVzZXJJZCI6OTQ5NDUsImlhdCI6MTczNzMyNDA1MCwiZXhwIjoxODk1MTEyMDUwfQ.8gmdCP5HKuVul-oA0hQqvzPVluEXUPyQUSeeycV9kJI";
-const API_DATE = "2025-02-16";
+const API_DATE = "2025-02-16"; // Replace with a valid past date if needed.
 const API_URL = `https://api.cases.gg/affiliates/detailed-summary/v2/${API_DATE}`;
 
 // ===============================================
 // Data Cache (Top 11 Wagerers)
 // ===============================================
-// This cache will store an array of the top 11 wagerers.
+// This variable will hold the processed top 11 wagerers.
 let dataCache = [];
 
 // ===============================================
 // Fetch Data Function
 // ===============================================
 /*
-  This function fetches data from the Cases.gg API using cloudscraper.
-  It logs detailed debugging information, sorts the API response by "wagered"
-  (highest first), and then extracts the top 11 wagerers. For each wagerer, it
-  creates an object with:
-    - rank: placement number (1 through 11)
-    - name: the player's name (from the API "name" field)
-    - wager: the wagered amount (converted from cents to dollars and formatted)
-  The resulting array is stored in the dataCache variable.
+  fetchData() sends a GET request to the Cases.gg API using cloudscraper.
+  It mimics a browser request by using a common User-Agent and necessary headers,
+  including the Authorization token. The API response is expected to be an array.
+  
+  Steps:
+  1. Log the request options and send the GET request.
+  2. If the response status is 200, sort the data by the "wagered" field (descending).
+  3. Extract the top 11 entries, mapping each to an object containing:
+       - rank: the placement (1 through 11)
+       - name: the player's name (from the API "name" field)
+       - wager: the wagered amount in dollars and cents (calculated from "wagered")
+  4. Store the processed array in dataCache.
+  5. Log all steps for debugging.
 */
 async function fetchData() {
   console.log(
@@ -66,8 +70,10 @@ async function fetchData() {
         Referer: "https://cases.gg/",
         Origin: "https://cases.gg"
       },
+      jar: true, // Enable cookie jar for Cloudflare cookies
       json: true,
-      resolveWithFullResponse: true
+      resolveWithFullResponse: true,
+      simple: false // Do not automatically throw errors on non-2xx responses
     };
 
     console.log(
@@ -106,10 +112,12 @@ async function fetchData() {
           (a, b) => (b.wagered || 0) - (a.wagered || 0)
         );
 
-        // Extract the top 11 wagerers and map them into objects with rank, name, and wager.
+        // Map the top 11 wagerers into an array of objects.
+        // For each user, "name" is taken from the API "name" field,
+        // and "wager" is computed by converting "wagered" (in cents) to dollars.
         const topWagerers = sortedData.slice(0, 11).map((user, index) => ({
           rank: index + 1,
-          name: user.name, // Use the "name" field from the API output.
+          name: user.name,
           wager: `$${(user.wagered / 100).toLocaleString("en-US", {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
@@ -198,8 +206,8 @@ app.use((req, res, next) => {
 // Serve static assets from the "static" folder.
 app.use("/static", express.static(path.join(__dirname, "static")));
 
-// Render index.html from the "templates" folder with API data injected.
-// The index.html template should include EJS code to iterate over "topWagerers" and display the data.
+// Render index.html from the "templates" folder with the API data injected.
+// Your index.html file (an EJS template) should loop through "topWagerers" to replace placeholder data.
 app.get("/", (req, res) => {
   console.log(
     `[${new Date().toISOString()}] INFO: Rendering index.html with API data`
