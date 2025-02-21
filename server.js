@@ -1,30 +1,58 @@
 /**********************************************
  * server.js (Original with Adjustments for File Structure,
- * Full 11 Spots, and Mobile Support)
+ * Full 11 Spots, Mobile Support, and Enhanced Logging)
  **********************************************/
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Create logs directory if it doesn't exist
+const logDir = path.join(__dirname, 'logs');
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir);
+}
 
 // Parse JSON bodies if needed
 app.use(express.json());
 
 // --- Detailed Logging Middleware (Added) ---
-// Logs request details without altering any existing functionality.
+// Logs request details to the console and appends them as JSON to a daily log file.
 app.use((req, res, next) => {
+  const logEntry = {
+    time: new Date().toISOString(),
+    method: req.method,
+    url: req.url,
+    ip: req.ip,
+    headers: req.headers,
+    query: req.query,
+    body: req.body
+  };
+
+  // Log to console
   console.log(`
 [DETAILED REQUEST LOG]
 ----------------------
-Time:      ${new Date().toISOString()}
-Method:    ${req.method}
-URL:       ${req.url}
-IP:        ${req.ip}
-Headers:   ${JSON.stringify(req.headers, null, 2)}
-Query:     ${JSON.stringify(req.query, null, 2)}
-Body:      ${JSON.stringify(req.body, null, 2)}
+Time:      ${logEntry.time}
+Method:    ${logEntry.method}
+URL:       ${logEntry.url}
+IP:        ${logEntry.ip}
+Headers:   ${JSON.stringify(logEntry.headers, null, 2)}
+Query:     ${JSON.stringify(logEntry.query, null, 2)}
+Body:      ${JSON.stringify(logEntry.body, null, 2)}
 ----------------------
 `);
+
+  // Determine the daily log file name (e.g., log-2025-02-20.json)
+  const today = new Date().toISOString().slice(0, 10);
+  const logFile = path.join(logDir, `log-${today}.json`);
+
+  // Append the log entry as a JSON string followed by a newline
+  fs.appendFile(logFile, JSON.stringify(logEntry) + "\n", err => {
+    if (err) console.error("Error writing log:", err);
+  });
+
   next();
 });
 
@@ -36,12 +64,26 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'templates', 'index.html'));
 });
 
-// API route to serve wager race data with full 11 spots as originally requested
+// API route to serve wager race data with full 11 spots.
+// In production, replace getAPIData() with your actual API call logic.
 app.get('/data', (req, res) => {
   console.log('[DATA ROUTE] Request received at /data');
   
-  // Placeholder data with 11 spots
-  const exampleData = [
+  getAPIData()
+    .then(data => {
+      console.log('[DATA ROUTE] Sending the following data to client:', data);
+      res.json(data);
+    })
+    .catch(err => {
+      console.error('[DATA ROUTE] Error fetching API data:', err);
+      res.status(500).json({ error: 'Error fetching data' });
+    });
+});
+
+// Simulated function to retrieve API data.
+// Replace this function with your actual API call and data processing.
+function getAPIData() {
+  return Promise.resolve([
     { name: "Alice", wager: "$10,000" },
     { name: "Bob", wager: "$9,500" },
     { name: "Charlie", wager: "$8,750" },
@@ -53,11 +95,8 @@ app.get('/data', (req, res) => {
     { name: "Ian", wager: "$5,500" },
     { name: "Jack", wager: "$5,000" },
     { name: "Kelly", wager: "$4,500" }
-  ];
-  
-  console.log('[DATA ROUTE] Sending the following data to client:', exampleData);
-  res.json(exampleData);
-});
+  ]);
+}
 
 // Fallback for unmatched routes: serve 404.html from the templates folder
 app.use((req, res) => {
