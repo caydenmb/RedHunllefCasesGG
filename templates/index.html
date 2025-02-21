@@ -1,393 +1,378 @@
 <!DOCTYPE html>
 <html lang="en">
-  <!-- 
-    ================================================================================
-    File: index.html (EJS Template)
-    Description: This template displays the top wagerers fetched from the Cases.gg API.
-                 The data is passed in via the "topWagerers" variable (an array of objects).
-                 Each object has the following properties:
-                   - rank: the placement number (1 through 11)
-                   - name: the player's name (from API "name")
-                   - wager: a formatted string in dollars and cents (derived from "wagered")
-    Folder Structure:
-      /workspace
-         ├─ server.js
-         ├─ package.json
-         ├─ /static            --> contains 1st.png, 2nd.png, 3rd.png, redlogo.png, etc.
-         └─ /templates         --> contains index.html and 404.html
-    ================================================================================
-  -->
-  <head>
-    <!-- Metadata and Document Settings -->
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Top Wagerers Dashboard</title>
-    <!-- External CSS file (if available) can be linked here -->
-    <!-- <link rel="stylesheet" href="/static/style.css" /> -->
-    <style>
-      /* ============================================
-         Base Styling
-         ============================================ */
-      body {
-        font-family: Arial, sans-serif;
-        background: #f5f5f5;
-        margin: 0;
-        padding: 20px;
-        color: #333;
-      }
-      /* ============================================
-         Header Styles
-         ============================================ */
-      header {
-        text-align: center;
-        margin-bottom: 30px;
-      }
+<head>
+  <!-- Metadata and Title -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>Redhunllef Livestream</title>
+  
+  <!-- Favicon (Logo) -->
+  <link rel="icon" href="/static/redlogo.png" type="image/png" />
+  
+  <!-- Google Fonts: Roboto -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+
+  <!-- ========================================================= -->
+  <!-- CSS Styles -->
+  <!-- ========================================================= -->
+  <style>
+    /* Reset and Base Styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #3a3a3a;
+      color: #f0f0f0;
+      overflow-x: hidden;
+    }
+
+    /* ============================================== */
+    /* Starry Background Styles */
+    /* ============================================== */
+    #stars {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      z-index: -1;
+      overflow: hidden;
+    }
+    .stars-overlay {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+    .star {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: #fff;
+      border-radius: 50%;
+      opacity: 0.8;
+    }
+
+    /* ============================================== */
+    /* Main Container */
+    /* ============================================== */
+    .container {
+      position: relative;
+      padding: 20px;
+      text-align: center;
+    }
+
+    /* ============================================== */
+    /* Header and Logo */
+    /* ============================================== */
+    header img {
+      width: 225px;
+      height: auto;
+      animation: bounce 0.6s infinite ease-in-out;
+      margin-bottom: 20px;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+
+    /* ============================================== */
+    /* Sponsor Section */
+    /* ============================================== */
+    #sponsor-message p {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+    }
+    .button-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    .button {
+      padding: 15px 30px;
+      background-color: #ff2d2d;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 5px;
+      font-size: 1.2rem;
+      transition: background-color 0.3s ease;
+    }
+    .button:hover {
+      background-color: #cc2424;
+    }
+
+    /* ============================================== */
+    /* Wager Race Section */
+    /* ============================================== */
+    .wager-container {
+      margin-top: 40px;
+    }
+    .wager-title {
+      font-size: 2rem;
+      margin-bottom: 20px;
+    }
+    /* Podium for Top 3 */
+    .podium {
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+    .podium .position {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 10px;
+      border-radius: 10px;
+      background-color: #444;
+      color: #fff;
+    }
+    .podium .position h3 {
+      margin-bottom: 5px;
+      font-size: 1.3rem;
+    }
+    .podium .position p {
+      font-size: 1.1rem;
+    }
+    /* Specific styles for podium placements */
+    .podium .first {
+      background-color: gold;
+      width: 220px;
+      height: 270px;
+      box-shadow: 0 0 20px rgba(255,215,0,0.7);
+    }
+    .podium .second {
+      background-color: silver;
+      width: 180px;
+      height: 220px;
+      box-shadow: 0 0 15px rgba(192,192,192,0.7);
+    }
+    .podium .third {
+      background-color: #cd7f32;
+      width: 180px;
+      height: 200px;
+      box-shadow: 0 0 15px rgba(205,127,50,0.7);
+    }
+    /* Other Standings Grid (Positions 4 to 11) */
+    .other-standings {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 20px;
+    }
+    .standing {
+      background-color: #444;
+      padding: 10px;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 1rem;
+    }
+    .standing h3 {
+      font-size: 1.2rem;
+      margin-bottom: 5px;
+      color: #ff2d2d;
+    }
+    
+    /* ============================================== */
+    /* Footer */
+    /* ============================================== */
+    footer {
+      margin-top: 40px;
+      font-size: 0.9rem;
+      color: #888;
+    }
+    footer a {
+      color: #ff2d2d;
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+    
+    /* ============================================== */
+    /* Responsive Styles */
+    /* ============================================== */
+    @media (max-width: 768px) {
       header img {
-        max-width: 200px;
-        display: block;
-        margin: 0 auto;
+        width: 180px;
       }
-      header h1 {
-        margin-top: 10px;
-        font-size: 2.5rem;
-        color: #222;
+      .button {
+        font-size: 1rem;
+        padding: 12px 24px;
       }
-      /* ============================================
-         Navigation (Optional)
-         ============================================ */
-      nav {
-        text-align: center;
-        margin-bottom: 20px;
+      .wager-title {
+        font-size: 1.5rem;
       }
-      nav a {
-        color: #0077cc;
-        text-decoration: none;
-        margin: 0 15px;
-        font-size: 1.1rem;
+      .podium .first, .podium .second, .podium .third {
+        width: 150px;
       }
-      nav a:hover {
-        text-decoration: underline;
-      }
-      /* ============================================
-         Main Content Styles
-         ============================================ */
-      main {
-        max-width: 1200px;
-        margin: 0 auto;
-      }
-      section {
-        background: #fff;
-        padding: 20px;
-        margin-bottom: 30px;
-        border-radius: 4px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-      }
-      section h2 {
-        margin-top: 0;
-        font-size: 2rem;
-        color: #444;
-      }
-      section p {
-        line-height: 1.6;
-      }
-      /* ============================================
-         Table Styles for Top Wagerers
-         ============================================ */
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 20px 0;
-      }
-      table th,
-      table td {
-        padding: 12px;
-        border-bottom: 1px solid #ddd;
-        text-align: left;
-      }
-      table th {
-        background-color: #333;
-        color: #fff;
-      }
-      table tr:hover {
-        background-color: #f9f9f9;
-      }
-      /* ============================================
-         Footer Styles
-         ============================================ */
-      footer {
-        text-align: center;
-        margin-top: 40px;
-        padding-top: 20px;
-        border-top: 1px solid #ccc;
-        color: #777;
-      }
-      /* ============================================
-         Additional Utility Classes
-         ============================================ */
-      .center {
-        text-align: center;
-      }
-    </style>
-  </head>
-  <body>
-    <!-- ============================================
-         Header Section
-         ============================================ -->
+    }
+  </style>
+</head>
+<body>
+  <!-- ========================================================= -->
+  <!-- Starry Background -->
+  <!-- ========================================================= -->
+  <div id="stars">
+    <div class="stars-overlay"></div>
+  </div>
+  
+  <!-- ========================================================= -->
+  <!-- Main Container -->
+  <!-- ========================================================= -->
+  <div class="container">
+    <!-- Header Section: Clickable Logo -->
     <header>
-      <!-- Logo image served from /static folder -->
-      <img src="/static/redlogo.png" alt="Company Logo" />
-      <h1>Top Wagerers Dashboard</h1>
-      <!-- Short description -->
-      <p>Real-time updates of the top 11 wagerers as reported by the Cases.gg API.</p>
+      <a href="https://kick.com/redhunllef">
+        <img src="/static/redlogo.png" alt="Redhunllef Logo" />
+      </a>
     </header>
-
-    <!-- ============================================
-         Navigation Section (Optional)
-         ============================================ -->
-    <nav>
-      <!-- Navigation links can be added here -->
-      <a href="/">Home</a>
-      <a href="/data">API Data</a>
-      <a href="/about">About</a>
-      <a href="/contact">Contact</a>
-    </nav>
-
-    <!-- ============================================
-         Main Content Section
-         ============================================ -->
-    <main>
-      <!-- Section: Top Wagerers Table -->
-      <section id="wager-table">
-        <h2>Top 11 Wagerers</h2>
-        <p>
-          This table displays the top wagerers sorted by wagered amount (converted from cents to dollars and cents).
-          The player's name is taken directly from the API "name" field.
-        </p>
-        <table>
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Name</th>
-              <th>Wager</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Check if the topWagerers data exists and has at least one element -->
-            <% if (topWagerers && topWagerers.length) { %>
-              <!-- Loop through the topWagerers array -->
-              <% topWagerers.forEach(function(user) { %>
-                <tr>
-                  <td><%= user.rank %></td>
-                  <td><%= user.name %></td>
-                  <td><%= user.wager %></td>
-                </tr>
-              <% }); %>
-            <% } else { %>
-              <tr>
-                <td colspan="3" class="center">No data available at the moment.</td>
-              </tr>
-            <% } %>
-          </tbody>
-        </table>
-      </section>
-
-      <!-- ============================================
-           Section: Data Analysis / Chart (Optional)
-           ============================================ -->
-      <section id="data-analysis">
-        <h2>Data Analysis</h2>
-        <p>
-          Below is a visual representation of the wager amounts for the top wagerers. The chart is rendered using Chart.js.
-          (If there is no data, the chart will not display.)
-        </p>
-        <!-- Canvas element for the chart -->
-        <canvas id="wagerChart" width="800" height="400"></canvas>
-      </section>
-
-      <!-- ============================================
-           Section: How Data Is Updated
-           ============================================ -->
-      <section id="data-update-info">
-        <h2>Data Update Information</h2>
-        <p>
-          The wager data is automatically fetched from the Cases.gg API every 90 seconds.
-          This page displays real-time updates based on that data.
-        </p>
-      </section>
-
-      <!-- ============================================
-           FAQ Section
-           ============================================ -->
-      <section id="faq">
-        <h2>Frequently Asked Questions</h2>
-        <!-- FAQ Item 1 -->
-        <div class="faq-item">
-          <h3>How is the wager amount calculated?</h3>
-          <p>
-            The wager amount is provided by the API in cents (the "wagered" field). In this dashboard, it is
-            converted into dollars and cents. For example, a value of 986 is displayed as $9.86.
-          </p>
-        </div>
-        <!-- FAQ Item 2 -->
-        <div class="faq-item">
-          <h3>What does the "name" field represent?</h3>
-          <p>
-            The "name" field in the API data represents the player's username. This dashboard displays that name
-            alongside their wager amount.
-          </p>
-        </div>
-        <!-- FAQ Item 3 -->
-        <div class="faq-item">
-          <h3>How frequently is the data updated?</h3>
-          <p>
-            The data is fetched from the Cases.gg API every 90 seconds. If you do not see any changes, please wait
-            a few minutes or check your network connection.
-          </p>
-        </div>
-      </section>
-
-      <!-- ============================================
-           Section: Additional Information (Filler Content)
-           ============================================ -->
-      <section id="additional-info">
-        <h2>Additional Information</h2>
-        <p>
-          This section provides further details about the data, the API, and other related topics. Below is some
-          additional placeholder text that explains the context and methodology behind the wager data.
-        </p>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque eget velit sit amet leo interdum
-          fringilla. Donec faucibus libero a sem fermentum, a bibendum mi tincidunt. Nam dignissim, massa at
-          convallis fermentum, ligula mauris suscipit velit, vitae placerat risus sem in ipsum. Fusce at orci sed
-          quam sollicitudin maximus.
-        </p>
-        <p>
-          Cras et nibh ac mauris sollicitudin tincidunt. Sed in suscipit lectus. Integer faucibus, ipsum vel
-          congue tincidunt, massa massa vestibulum risus, sit amet interdum lorem magna id massa. Donec semper
-          cursus ligula, a dignissim ligula volutpat ut.
-        </p>
-        <!-- Repeat several paragraphs to ensure the file is long enough -->
-        <p>
-          Aenean ut urna nec tortor convallis ullamcorper. Donec accumsan lorem nec semper mollis. Curabitur
-          tincidunt orci at erat fermentum, sit amet scelerisque nunc fringilla. Morbi ut massa nec arcu
-          fermentum porttitor. Sed auctor, libero id porta ullamcorper, justo lorem dignissim odio, in dignissim
-          magna justo nec nisi.
-        </p>
-        <p>
-          Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Quisque eget
-          convallis mauris. Duis tincidunt, orci non auctor dignissim, magna lorem pharetra lacus, at tincidunt
-          nibh odio ut sapien.
-        </p>
-        <!-- ============================================
-             Filler Loop: Generate many paragraphs to push the file length above 400 lines
-             ============================================ -->
-        <% for (let i = 0; i < 50; i++) { %>
-          <!-- Filler paragraph number <%= i+1 %> -->
-          <p>
-            Filler paragraph <%= i+1 %>: Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vitae
-            justo non urna tempus vestibulum. Nulla facilisi. Praesent id leo sed nulla tincidunt feugiat.
-            Suspendisse potenti. Morbi aliquam, massa at volutpat congue, libero magna pretium augue, non
-            vestibulum elit nulla ut ipsum. Etiam quis velit magna. Nulla viverra lorem ac dolor vehicula
-            tincidunt. Duis et est massa. Curabitur euismod, lectus in lacinia cursus, sapien libero
-            sollicitudin lectus, nec varius augue urna in massa.
-          </p>
-          <!-- Additional filler content -->
-          <p>
-            Additional details for filler paragraph <%= i+1 %>: Vestibulum ante ipsum primis in faucibus orci
-            luctus et ultrices posuere cubilia curae; Donec volutpat, massa nec faucibus sodales, felis diam
-            pellentesque lorem, vitae vehicula nunc risus ac arcu. Proin malesuada sem a lorem feugiat, nec
-            imperdiet odio varius. Aliquam erat volutpat. Integer ac consequat risus.
-          </p>
-          <p>
-            More filler content for paragraph <%= i+1 %>: Lorem ipsum dolor sit amet, consectetur adipiscing
-            elit. Praesent vestibulum malesuada massa, sit amet pulvinar eros facilisis ut. Nulla facilisi.
-            Fusce at nunc sit amet dolor convallis faucibus. Morbi maximus sem ac odio ultrices, sed
-            porttitor libero porta.
-          </p>
-          <!-- Blank line for spacing -->
-          <br />
-        <% } %>
-        <!-- End of filler loop -->
-      </section>
-    </main>
-
-    <!-- ============================================
-         Footer Section
-         ============================================ -->
+    
+    <!-- Sponsor Message -->
+    <div id="sponsor-message">
+      <p>Support Redhunllef by visiting his sponsors below.</p>
+    </div>
+    
+    <!-- Sponsor Buttons -->
+    <div class="button-container">
+      <a href="https://shuffle.com/?r=Red" class="button">Shuffle.com</a>
+      <a href="https://chicken.gg/r/Red" class="button">Chicken.gg</a>
+      <a href="https://runestake.com/r/red" class="button">Runestake.com</a>
+      <a href="https://csgostake.com/r/red" class="button">CSGOStake.com</a>
+    </div>
+    
+    <!-- Wager Race Section -->
+    <div class="wager-container">
+      <h2 class="wager-title">Top 11 Wagers</h2>
+      <!-- Podium for Top 3 Wagerers -->
+      <div class="podium" id="top-3-standings">
+        <!-- Dynamic content for positions 1-3 will be inserted here -->
+      </div>
+      <!-- Grid for Standings 4 to 11 -->
+      <div class="other-standings" id="wager-standings">
+        <!-- Dynamic content for positions 4-11 will be inserted here -->
+      </div>
+    </div>
+    
+    <!-- Footer -->
     <footer>
-      <p>&copy; <%= new Date().getFullYear() %> Your Company. All rights reserved.</p>
-      <p>
-        This dashboard pulls real-time wager data from Cases.gg. If you have any questions or need further
-        assistance, please contact support.
-      </p>
+      <p>&copy; 2024 Redhunllef Livestream. All Rights Reserved.</p>
+      <p>Built by <a href="https://kick.com/gingrsnaps" target="_blank">GingrSnaps</a></p>
     </footer>
-
-    <!-- ============================================
-         External JavaScript and Chart Rendering
-         ============================================ -->
-    <!-- Load Chart.js from static folder (if available) -->
-    <script src="/static/chart.js"></script>
-    <script>
-      // If topWagerers data exists and Chart.js is loaded, render a bar chart.
-      (function() {
-        // Ensure that the canvas element exists
-        var canvas = document.getElementById("wagerChart");
-        if (canvas && typeof Chart !== "undefined" && <%- JSON.stringify(topWagerers && topWagerers.length ? true : false) %>) {
-          var ctx = canvas.getContext("2d");
-          // Extract labels (ranks) and data (wager amounts without the dollar sign and commas)
-          var labels = [];
-          var dataValues = [];
-          <% if (topWagerers && topWagerers.length) { %>
-            <% topWagerers.forEach(function(user) { %>
-              labels.push("Rank <%= user.rank %>");
-              // Remove the dollar sign and commas before converting to number
-              dataValues.push(Number("<%= user.wager.replace('$','').replace(/,/g, '') %>"));
-            <% }); %>
-          <% } %>
-          // Create the chart
-          var wagerChart = new Chart(ctx, {
-            type: "bar",
-            data: {
-              labels: labels,
-              datasets: [
-                {
-                  label: "Wager Amount",
-                  data: dataValues,
-                  backgroundColor: "rgba(54, 162, 235, 0.5)",
-                  borderColor: "rgba(54, 162, 235, 1)",
-                  borderWidth: 1
-                }
-              ]
-            },
-            options: {
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  ticks: {
-                    // Format the y-axis labels as dollars
-                    callback: function(value) {
-                      return "$" + value;
-                    }
-                  }
-                }
-              },
-              plugins: {
-                legend: {
-                  display: true,
-                  position: "top"
-                },
-                title: {
-                  display: true,
-                  text: "Wager Amounts by Rank"
-                }
-              }
-            }
-          });
-        }
-      })();
-    </script>
-    <!-- ============================================
-         End of JavaScript Section
-         ============================================ -->
-  </body>
+  </div>
+  
+  <!-- ========================================================= -->
+  <!-- JavaScript: Starry Background Effect -->
+  <!-- ========================================================= -->
+  <script>
+    (function() {
+      const starsContainer = document.querySelector('.stars-overlay');
+      const starsCount = 350;
+      for (let i = 0; i < starsCount; i++) {
+        const star = document.createElement('div');
+        star.classList.add('star');
+        star.style.top = Math.random() * 100 + '%';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.opacity = Math.random();
+        star.style.transform = 'scale(' + (1 + Math.random() * 0.5) + ')';
+        starsContainer.appendChild(star);
+      }
+      
+      // Desktop: Optional parallax effect with mouse movement
+      if (window.innerWidth > 768) {
+        window.addEventListener('mousemove', (e) => {
+          const { clientX, clientY } = e;
+          starsContainer.style.transform = `translate(${clientX / 100}px, ${clientY / 100}px)`;
+        });
+      }
+    })();
+  </script>
+  
+  <!-- ========================================================= -->
+  <!-- JavaScript: Update Wager Race Standings -->
+  <!-- ========================================================= -->
+  <script>
+    // Placeholder data (used if API data is unavailable)
+    const placeholderData = [
+      { rank: 1, name: "Player1", wager: "$10,000.00" },
+      { rank: 2, name: "Player2", wager: "$8,500.00" },
+      { rank: 3, name: "Player3", wager: "$7,500.00" },
+      { rank: 4, name: "Player4", wager: "$7,000.00" },
+      { rank: 5, name: "Player5", wager: "$6,500.00" },
+      { rank: 6, name: "Player6", wager: "$6,000.00" },
+      { rank: 7, name: "Player7", wager: "$5,500.00" },
+      { rank: 8, name: "Player8", wager: "$5,000.00" },
+      { rank: 9, name: "Player9", wager: "$4,500.00" },
+      { rank: 10, name: "Player10", wager: "$4,000.00" },
+      { rank: 11, name: "Player11", wager: "$3,500.00" }
+    ];
+    
+    // Function to update the standings from the API data (fetched at /data)
+    function updateWagerRace() {
+      fetch('/data')
+        .then(response => response.json())
+        .then(data => {
+          console.log(`[${new Date().toISOString()}] INFO: Fetched data:`, data);
+          // If API data returns an error, use placeholder data
+          if (data.error || !Array.isArray(data)) {
+            console.warn(`[${new Date().toISOString()}] WARNING: Using placeholder data due to API error.`);
+            populateWithData(placeholderData);
+          } else {
+            // Expecting data to be an array of objects with properties: rank, name, wager
+            populateWithData(data);
+          }
+        })
+        .catch(error => {
+          console.error(`[${new Date().toISOString()}] ERROR: Failed to fetch data:`, error);
+          populateWithData(placeholderData);
+        });
+    }
+    
+    // Function that populates the podium and standings sections with data
+    function populateWithData(data) {
+      // Separate top 3 and others
+      const top3 = data.slice(0, 3);
+      const others = data.slice(3);
+      
+      // Populate Podium (for top 3)
+      const top3Container = document.getElementById('top-3-standings');
+      top3Container.innerHTML = `
+        <div class="position second">
+          <h3>2nd: ${top3[1].name}</h3>
+          <p>${top3[1].wager}</p>
+        </div>
+        <div class="position first">
+          <h3>1st: ${top3[0].name}</h3>
+          <p>${top3[0].wager}</p>
+        </div>
+        <div class="position third">
+          <h3>3rd: ${top3[2].name}</h3>
+          <p>${top3[2].wager}</p>
+        </div>
+      `;
+      
+      // Populate the other standings (positions 4 to 11)
+      const othersContainer = document.getElementById('wager-standings');
+      othersContainer.innerHTML = "";
+      others.forEach((user, index) => {
+        const div = document.createElement('div');
+        div.classList.add('standing');
+        div.innerHTML = `<h3>${index + 4}th: ${user.name}</h3><p>${user.wager}</p>`;
+        othersContainer.appendChild(div);
+      });
+    }
+    
+    // Update the wager race standings every 15 minutes
+    setInterval(updateWagerRace, 15 * 60 * 1000);
+    // Initial update when the page loads
+    window.onload = updateWagerRace;
+  </script>
+</body>
 </html>
