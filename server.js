@@ -14,10 +14,10 @@ const PORT = process.env.PORT || 8080;
 // API Configuration
 // ===============================================
 // IMPORTANT: Ensure the date used is in the past and your token is authorized for that range.
-// For example, "2025-02-16" is used here.
+// For example, "2025-02-20" is used here.
 const API_TOKEN =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoicGFzcyIsInNjb3BlIjoiYWZmaWxpYXRlcyIsInVzZXJJZCI6OTQ5NDUsImlhdCI6MTczNzMyNDA1MCwiZXhwIjoxODk1MTEyMDUwfQ.8gmdCP5HKuVul-oA0hQqvzPVluEXUPyQUSeeycV9kJI";
-const API_DATE = "2025-02-16";
+const API_DATE = "2025-02-20";
 const API_URL = `https://api.cases.gg/affiliates/detailed-summary/v2/${API_DATE}`;
 
 // ===============================================
