@@ -377,7 +377,6 @@
     /**
      * Function to update the wager race standings by fetching API data.
      * The API data is expected to be an array of user objects.
-     * Each user's name is masked and their wager is displayed.
      */
     function updateWagerRace() {
       fetch('/data')
@@ -420,8 +419,9 @@
         });
     }
 
-    // Update the wager race standings every 15 minutes
-    setInterval(updateWagerRace, 15 * 60 * 1000);
+    // Update the wager race standings every 90 seconds
+    setInterval(updateWagerRace, 90 * 1000);
+    // Update on boot
     window.onload = updateWagerRace;
   </script>
 
