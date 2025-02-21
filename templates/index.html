@@ -5,6 +5,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <!-- Added meta tags for enhanced mobile experience -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  
   <title>Redhunllef Livestream</title>
   
   <!-- Favicon (Logo) -->
@@ -222,6 +226,56 @@
       .other-standings { grid-template-columns: repeat(2, 1fr); }
     }
     
+    /* ======================================================================
+       Additional Media Query for small screens (max-width: 480px)
+    ====================================================================== */
+    @media (max-width: 480px) {
+      /* Prevent horizontal scrolling on very narrow screens */
+      html, body {
+        overflow-x: hidden;
+      }
+  
+      /* Ensure the body can stack content gracefully on small phones */
+      body {
+        display: block !important;
+        padding: 10px !important;
+        text-align: center !important;
+      }
+  
+      /* Adjust container so it doesn't force extra vertical space */
+      .container {
+        min-height: auto !important;
+      }
+  
+      /* Make the sponsor buttons stack vertically with smaller spacing */
+      .button-container {
+        flex-direction: column !important;
+        gap: 10px !important;
+      }
+      .button {
+        max-width: 100% !important;
+        width: auto !important;
+      }
+  
+      /* Podium: stack the top 3 columns vertically on tiny screens */
+      .podium {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 20px !important;
+      }
+      .podium div {
+        width: 80% !important;
+        height: auto !important;
+        margin-bottom: 20px !important;
+      }
+  
+      /* Other standings: only 1 column so it doesn't get squished */
+      .other-standings {
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+      }
+    }
+  
     /* ======================================================================
        Starry Background Styles
     ====================================================================== */
