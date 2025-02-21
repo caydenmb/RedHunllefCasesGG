@@ -1,71 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Metadata and Title -->
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>API Data Debug</title>
-  
-  <!-- Simple Styles for Displaying JSON Data -->
-  <style>
-    body {
-      background-color: #f0f0f0;
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      color: #333;
-    }
-    h1 {
-      text-align: center;
-    }
-    pre {
-      background-color: #fff;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      padding: 15px;
-      white-space: pre-wrap;
-      word-wrap: break-word;
-      max-width: 100%;
-      overflow-x: auto;
-    }
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Data - Redhunllef Livestream</title>
+    <link rel="icon" href="/static/redlogo.png" type="image/png">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #3a3a3a;
+            color: #f0f0f0;
+            padding: 20px;
+        }
+        pre {
+            background-color: #222;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>API Data Debug</h1>
-    <!-- This pre element will display the API JSON data -->
-    <pre id="apiData">Loading API data...</pre>
-  </div>
-
-  <!-- JavaScript to fetch API data from the /data endpoint -->
-  <script>
-    // Function to fetch the API data and display it in the <pre> element.
-    function fetchAPIData() {
-      fetch('/data')
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok: ' + response.status);
-          }
-          return response.json();
-        })
-        .then(data => {
-          // Log the fetched data to the console for debugging.
-          console.log(`[${new Date().toISOString()}] INFO: Fetched API data:`, data);
-          // Display the data as a formatted JSON string.
-          document.getElementById('apiData').textContent = JSON.stringify(data, null, 2);
-        })
-        .catch(error => {
-          console.error(`[${new Date().toISOString()}] ERROR: Failed to fetch API data:`, error);
-          document.getElementById('apiData').textContent = 'Error fetching API data: ' + error;
-        });
-    }
-    
-    // Fetch API data when the page loads.
-    window.onload = fetchAPIData;
-  </script>
+    <h1>API Data</h1>
+    <pre id="api-data">Loading API data...</pre>
+    <script>
+        function fetchAPIData() {
+            fetch('/data')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('api-data').textContent = JSON.stringify(data, null, 2);
+                })
+                .catch(err => {
+                    document.getElementById('api-data').textContent = "Error fetching API data: " + err;
+                });
+        }
+        window.onload = fetchAPIData;
+    </script>
 </body>
 </html>
