@@ -1,430 +1,400 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Meta tags for proper mobile responsiveness and modern browser support -->
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <!-- Added meta tags for enhanced mobile experience -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
-  
-  <title>Redhunllef Livestream</title>
-  
-  <!-- Favicon (Logo) -->
-  <link rel="icon" href="/static/redlogo.png" type="image/png">
-  
-  <!-- Google Fonts (Roboto for sleek typography) -->
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-  
-  <!-- Main Styles -->
-  <style>
-    /* ======================================================================
-       Global Reset and Base Styles
-    ====================================================================== */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    body {
-      font-family: 'Roboto', sans-serif;
-      background-color: #3a3a3a;
-      color: #f0f0f0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      text-align: center;
-      overflow-y: auto;
-      padding: 15px;
-      position: relative;
-    }
-    .container {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Redhunllef Livestream</title>
     
-    /* ======================================================================
-       Header & Logo Styles
-    ====================================================================== */
-    header img {
-      width: 225px;
-      height: auto;
-      animation: bounce 0.6s infinite ease-in-out;
-      margin-bottom: 30px;
-    }
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-15px); }
-    }
+    <!-- Favicon (Logo) -->
+    <link rel="icon" href="/static/redlogo.png" type="image/png">
     
-    /* ======================================================================
-       Button Container & Sponsor Button Styles
-    ====================================================================== */
-    .button-container {
-      display: flex;
-      gap: 20px;
-      justify-content: center;
-    }
-    .button {
-      padding: 17px 44px;
-      background-color: #ff2d2d;
-      color: #fff;
-      font-weight: bold;
-      text-decoration: none;
-      border-radius: 5px;
-      font-size: 1.5rem;
-      text-align: center;
-      max-width: 230px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .button:hover {
-      background-color: #cc2424;
-    }
-    
-    /* ======================================================================
-       Wager Race Section Styles
-    ====================================================================== */
-    .wager-container {
-      margin-top: 50px;
-      width: 100%;
-      text-align: center;
-    }
-    .wager-title {
-      font-size: 2rem;
-      margin-bottom: 25px;
-    }
-    
-    /* Podium styles for top 3 wagerers */
-    .podium {
-      display: flex;
-      justify-content: center;
-      align-items: flex-end;
-      gap: 40px;
-      margin-bottom: 40px;
-    }
-    .medal {
-      width: 75px;
-      height: auto;
-      margin-bottom: 10px;
-    }
-    .first-medal {
-      width: 112px; /* 50% larger for 1st place */
-    }
-    .podium div {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 15px;
-      border-radius: 10px;
-      text-align: center;
-      font-weight: bold;
-      color: #fff;
-      background-color: #444;
-      box-sizing: border-box;
-      font-size: 107%;
-    }
-    .podium div h3 {
-      margin-bottom: 10px;
-    }
-    
-    /* Styling for podium heights */
-    .first {
-      background-color: gold;
-      height: 270px;
-      width: 220px;
-      box-shadow: 0 0 20px rgba(255, 215, 0, 1);
-      text-shadow: 2px 2px 10px rgba(255, 215, 0, 1);
-    }
-    .second {
-      background-color: silver;
-      height: 220px;
-      width: 180px;
-      box-shadow: 0 0 15px rgba(192, 192, 192, 1);
-      text-shadow: 2px 2px 10px rgba(192, 192, 192, 1);
-    }
-    .third {
-      background-color: #cd7f32;
-      height: 200px;
-      width: 180px;
-      box-shadow: 0 0 15px rgba(205, 127, 50, 1);
-      text-shadow: 2px 2px 10px rgba(205, 127, 50, 1);
-    }
-    .other-standings {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 38px;
-      justify-items: center;
-      margin-bottom: 10px;
-    }
-    .standing {
-      background-color: #444;
-      padding: 10px;
-      border-radius: 10px;
-      text-align: center;
-      width: 180px;
-      height: 120px;
-      font-size: 1rem;
-      box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
-      overflow-wrap: break-word;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
-    .standing h3 {
-      font-size: 1.2rem;
-      margin-bottom: 5px;
-      color: #ff2d2d;
-      font-weight: bold;
-    }
-    .standing p {
-      font-size: 1rem;
-      margin: 0;
-      color: #fff;
-    }
-    
-    /* ======================================================================
-       Footer Styles
-    ====================================================================== */
-    footer {
-      margin-top: 30px;
-      font-size: 0.8rem;
-      color: #888;
-      text-align: center;
-    }
-    footer p {
-      margin: 5px 0;
-    }
-    footer a {
-      color: #ff2d2d;
-      text-decoration: none;
-    }
-    footer a:hover {
-      text-decoration: underline;
-    }
-    
-    /* ======================================================================
-       Responsive Media Queries
-    ====================================================================== */
-    @media (max-width: 768px) {
-      header img { width: 180px; }
-      .button-container { flex-direction: column; gap: 15px; }
-      .button { font-size: 1.3rem; padding: 16px 42px; max-width: 100%; }
-      .podium div { width: 150px; }
-      .other-standings { grid-template-columns: repeat(2, 1fr); }
-    }
-    
-    @media (max-width: 480px) {
-      /* Increase overall text size for better readability */
-      body { font-size: 1.2rem !important; }
-      /* Prevent horizontal scrolling */
-      html, body { overflow-x: hidden; }
-      /* Stack content gracefully */
-      body {
-        display: block !important;
-        padding: 10px !important;
-        text-align: center !important;
-      }
-      .container { min-height: auto !important; }
-      .button-container { flex-direction: column !important; gap: 10px !important; }
-      .button { max-width: 100% !important; width: auto !important; }
-      /* Podium: stack vertically and force order */
-      .podium {
-        flex-direction: column !important;
-        align-items: center !important;
-        gap: 20px !important;
-      }
-      .podium div {
-        width: 80% !important;
-        height: auto !important;
-        margin-bottom: 20px !important;
-      }
-      .podium .first { order: 1 !important; }
-      .podium .second { order: 2 !important; }
-      .podium .third { order: 3 !important; }
-      /* Other standings in one column */
-      .other-standings { grid-template-columns: 1fr !important; gap: 20px !important; }
-    }
-  
-    /* ======================================================================
-       Starry Background Styles
-    ====================================================================== */
-    #stars {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      overflow: hidden;
-    }
-    .stars-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      min-height: 100vh;
-      pointer-events: none;
-    }
-    .star {
-      position: absolute;
-      width: 2px;
-      height: 2px;
-      background: #ffffff;
-      border-radius: 50%;
-    }
-  </style>
+    <!-- Google Fonts (Roboto for sleek typography) -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Main Styles -->
+    <style>
+        /* Reset and global settings */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #3a3a3a;
+            color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            overflow-y: auto;
+            padding: 15px;
+            position: relative;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        header img {
+            width: 225px;
+            height: auto;
+            animation: bounce 0.6s infinite ease-in-out;
+            margin-bottom: 30px;
+        }
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+        .button-container {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        .button {
+            padding: 17px 44px;
+            background-color: #ff2d2d;
+            color: #fff;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 1.5rem;
+            text-align: center;
+            max-width: 230px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .button:hover {
+            background-color: #cc2424;
+        }
+        .wager-container {
+            margin-top: 50px;
+            width: 100%;
+            text-align: center;
+        }
+        .wager-title {
+            font-size: 2rem;
+            margin-bottom: 25px;
+        }
+        /* Podium styles for top 3 wagerers */
+        .podium {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        .medal {
+            width: 75px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+        .first-medal {
+            width: 112px;
+        }
+        .podium div {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            color: #fff;
+            background-color: #444;
+            box-sizing: border-box;
+            font-size: 107%;
+        }
+        .podium div h3 {
+            margin-bottom: 10px;
+        }
+        /* Podium heights */
+        .first {
+            background-color: gold;
+            height: 270px;
+            width: 220px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 1);
+            text-shadow: 2px 2px 10px rgba(255, 215, 0, 1);
+        }
+        .second {
+            background-color: silver;
+            height: 220px;
+            width: 180px;
+            box-shadow: 0 0 15px rgba(192, 192, 192, 1);
+            text-shadow: 2px 2px 10px rgba(192, 192, 192, 1);
+        }
+        .third {
+            background-color: #cd7f32;
+            height: 200px;
+            width: 180px;
+            box-shadow: 0 0 15px rgba(205, 127, 50, 1);
+            text-shadow: 2px 2px 10px rgba(205, 127, 50, 1);
+        }
+        .other-standings {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 38px;
+            justify-items: center;
+            margin-bottom: 10px;
+        }
+        .standing {
+            background-color: #444;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: center;
+            width: 180px;
+            height: 120px;
+            font-size: 1rem;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+            overflow-wrap: break-word;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        .standing h3 {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            color: #ff2d2d;
+            font-weight: bold;
+        }
+        .standing p {
+            font-size: 1rem;
+            margin: 0;
+            color: #fff;
+        }
+        /* Footer styling */
+        footer {
+            margin-top: 30px;
+            font-size: 0.8rem;
+            color: #888;
+            text-align: center;
+        }
+        footer p {
+            margin: 5px 0;
+        }
+        footer a {
+            color: #ff2d2d;
+            text-decoration: none;
+        }
+        footer a:hover {
+            text-decoration: underline;
+        }
+        @media (max-width: 768px) {
+            header img { width: 180px; }
+            .button-container { flex-direction: column; gap: 15px; }
+            .button { font-size: 1.3rem; padding: 16px 42px; max-width: 100%; }
+            .podium div { width: 150px; }
+            .other-standings { grid-template-columns: repeat(2, 1fr); }
+        }
+        /* Starry background styles */
+        #stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        .stars-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            min-height: 100vh;
+            pointer-events: none;
+        }
+        .star {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #ffffff;
+            border-radius: 50%;
+        }
+    </style>
 </head>
 <body>
-  <!-- Starry background -->
-  <div id="stars">
-    <div class="stars-overlay"></div>
-  </div>
 
-  <div class="container">
-    <!-- Header with logo linking to Kick.com -->
-    <header>
-      <a href="https://kick.com/redhunllef">
-        <img src="/static/redlogo.png" alt="Redhunllef Logo">
-      </a>
-    </header>
-
-    <!-- Sponsor message -->
-    <div id="sponsor-message">
-      <p>Support Redhunllef by visiting his sponsors below.</p>
+    <!-- Starry background -->
+    <div id="stars">
+        <div class="stars-overlay"></div>
     </div>
 
-    <!-- Sponsor buttons -->
-    <div class="button-container">
-      <a href="https://shuffle.com/?r=Red" class="button">Shuffle.com</a>
-      <a href="https://cases.gg/r/RED" class="button">Cases.gg</a>
-      <a href="https://upgrader.com/r/RED" class="button">Upgrader.com</a>
+    <div class="container">
+        <!-- Header with logo linking to Kick.com -->
+        <header>
+            <a href="https://kick.com/redhunllef">
+                <img src="/static/redlogo.png" alt="Redhunllef Logo">
+            </a>
+        </header>
+
+        <!-- Sponsor message -->
+        <div id="sponsor-message">
+            <p>Support Redhunllef by visiting his sponsors below.</p>
+        </div>
+
+        <!-- Sponsor buttons -->
+        <div class="button-container">
+                <a href="https://shuffle.com/?r=Red" class="button">Shuffle.com</a>
+                <a href="https://cases.gg/r/RED" class="button">Cases.gg</a>
+                <a href="https://upgrader.com/r/RED" class="button">Upgrader.com</a>
+        </div>
+
+        <!-- Wager Race section -->
+        <div class="wager-container">
+            <h2 class="wager-title">Cases.gg Wager Race</h2>
+
+            <!-- Podium for top 3 wagerers -->
+            <div class="podium" id="top-3-standings">
+                <!-- Top 3 players will be dynamically inserted here -->
+            </div>
+
+            <!-- Grid for 4th to 11th places -->
+            <div class="other-standings" id="wager-standings">
+                <!-- 4th to 11th place players will be dynamically inserted here -->
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <p>&copy; 2025 Redhunllef Livestream. All Rights Reserved.</p>
+            <p>Built by <a href="https://kick.com/gingrsnaps" target="_blank">GingrSnaps</a></p>
+        </footer>
     </div>
 
-    <!-- Wager Race section -->
-    <div class="wager-container">
-      <h2 class="wager-title">Cases.gg Wager Race</h2>
+    <!-- JavaScript to populate the standings from API data -->
+    <script>
+        // Function to update the wager race standings by fetching data from the server
+        function updateWagerRace() {
+            fetch('/data')
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Fetched data:", data);
+                    const top3Container = document.getElementById('top-3-standings');
+                    const standingsContainer = document.getElementById('wager-standings');
 
-      <!-- Podium for top 3 wagerers -->
-      <div class="podium" id="top-3-standings">
-        <!-- Top 3 players will be dynamically inserted here -->
-      </div>
+                    top3Container.innerHTML = '';
+                    standingsContainer.innerHTML = '';
 
-      <!-- Grid for 4th to 11th places -->
-      <div class="other-standings" id="wager-standings">
-        <!-- 4th to 11th place players will be dynamically inserted here -->
-      </div>
-    </div>
+                    // Check if the data is a non-empty array
+                    if (Array.isArray(data) && data.length > 0) {
+                        // Extract the top 3 for the podium
+                        const podium = data.slice(0, 3);
+                        top3Container.innerHTML = `
+                            <div class="second">
+                                <h3>2nd: ${podium[1].name}</h3>
+                                <p>Wager: ${podium[1].wager}</p>
+                            </div>
+                            <div class="first">
+                                <h3>1st: ${podium[0].name}</h3>
+                                <p>Wager: ${podium[0].wager}</p>
+                            </div>
+                            <div class="third">
+                                <h3>3rd: ${podium[2].name}</h3>
+                                <p>Wager: ${podium[2].wager}</p>
+                            </div>
+                        `;
+                        // For the remaining standings (4th to 11th)
+                        const others = data.slice(3, 11);
+                        others.forEach((user, index) => {
+                            const div = document.createElement('div');
+                            div.classList.add('standing');
+                            div.innerHTML = `<h3>${index + 4}th: ${user.name}</h3><p>Wager: ${user.wager}</p>`;
+                            standingsContainer.appendChild(div);
+                        });
+                    } else {
+                        console.warn("No valid data received from API, using placeholder data.");
+                        populateWithPlaceholderData();
+                    }
+                })
+                .catch(error => {
+                    console.error("Error fetching wager data:", error);
+                    populateWithPlaceholderData();
+                });
+        }
 
-    <!-- Footer -->
-    <footer>
-      <p>&copy; 2025 Redhunllef Livestream. All Rights Reserved.</p>
-      <p>Built by <a href="https://kick.com/gingrsnaps" target="_blank">GingrSnaps</a></p>
-    </footer>
-  </div>
+        // Function to populate the standings with placeholder data if the API fetch fails.
+        function populateWithPlaceholderData() {
+            const placeholderData = [
+                { rank: 1, name: "P**********", wager: "$10,000.00" },
+                { rank: 2, name: "P**********", wager: "$8,500.00" },
+                { rank: 3, name: "P**********", wager: "$7,500.00" },
+                { rank: 4, name: "P**********", wager: "$7,000.00" },
+                { rank: 5, name: "P**********", wager: "$6,500.00" },
+                { rank: 6, name: "P**********", wager: "$6,000.00" },
+                { rank: 7, name: "P**********", wager: "$5,500.00" },
+                { rank: 8, name: "P**********", wager: "$5,000.00" },
+                { rank: 9, name: "P**********", wager: "$4,500.00" },
+                { rank: 10, name: "P**********", wager: "$4,000.00" },
+                { rank: 11, name: "P**********", wager: "$3,500.00" }
+            ];
+            const top3Container = document.getElementById('top-3-standings');
+            const standingsContainer = document.getElementById('wager-standings');
 
-  <!-- JavaScript to populate the standings from API data -->
-  <script>
-    /**
-     * Utility function to mask the user's name for display.
-     * Only the first letter is shown, followed by asterisks.
-     *
-     * @param {string} name - The original name from the API.
-     * @returns {string} - The masked name.
-     */
-    function maskName(name) {
-      if (typeof name === 'string' && name.length > 0) {
-        return name[0] + "******";
-      }
-      return "******";
-    }
+            top3Container.innerHTML = `
+                <div class="second">
+                    <h3>2nd: ${placeholderData[1].name}</h3>
+                    <p>Wager: ${placeholderData[1].wager}</p>
+                </div>
+                <div class="first">
+                    <h3>1st: ${placeholderData[0].name}</h3>
+                    <p>Wager: ${placeholderData[0].wager}</p>
+                </div>
+                <div class="third">
+                    <h3>3rd: ${placeholderData[2].name}</h3>
+                    <p>Wager: ${placeholderData[2].wager}</p>
+                </div>
+            `;
+            for (let i = 3; i < placeholderData.length; i++) {
+                const div = document.createElement('div');
+                div.classList.add('standing');
+                div.innerHTML = `<h3>${i + 1}th: ${placeholderData[i].name}</h3><p>Wager: ${placeholderData[i].wager}</p>`;
+                standingsContainer.appendChild(div);
+            }
+        }
 
-    /**
-     * Function to update the wager race standings by fetching API data.
-     * The API is expected to return an array of user objects.
-     */
-    function updateWagerRace() {
-      fetch('/data')
-        .then(response => response.json())
-        .then(data => {
-          // Log full names to console for debugging
-          console.log("Fetched full wager names:", data.map(u => u.name));
-          
-          const top3Container = document.getElementById('top-3-standings');
-          const standingsContainer = document.getElementById('wager-standings');
-          top3Container.innerHTML = '';
-          standingsContainer.innerHTML = '';
+        // Update the wager race standings every 15 minutes.
+        setInterval(updateWagerRace, 15 * 60 * 1000);
+        window.onload = updateWagerRace;
+    </script>
 
-          // Use the API response directly (assumes 11 items are returned)
-          const podium = data.slice(0, 3);
-          top3Container.innerHTML = `
-            <div class="first">
-              <h3>1st: ${maskName(podium[0].name)}</h3>
-              <p>Wager: ${podium[0].wager}</p>
-            </div>
-            <div class="second">
-              <h3>2nd: ${maskName(podium[1].name)}</h3>
-              <p>Wager: ${podium[1].wager}</p>
-            </div>
-            <div class="third">
-              <h3>3rd: ${maskName(podium[2].name)}</h3>
-              <p>Wager: ${podium[2].wager}</p>
-            </div>
-          `;
-          // Populate positions 4 through 11
-          const others = data.slice(3, 11);
-          others.forEach((user, index) => {
-            const div = document.createElement('div');
-            div.classList.add('standing');
-            div.innerHTML = `<h3>${index + 4}th: ${maskName(user.name)}</h3><p>Wager: ${user.wager}</p>`;
-            standingsContainer.appendChild(div);
-          });
-        })
-        .catch(error => {
-          console.error("Error fetching wager data:", error);
-        });
-    }
+    <!-- JavaScript for the starry background effect -->
+    <script>
+        const starsContainer = document.querySelector('.stars-overlay');
+        const starsCount = 350;
+        const stars = [];
+        for (let i = 0; i < starsCount; i++) {
+            const star = document.createElement('div');
+            star.classList.add('star');
+            star.style.top = Math.random() * starsContainer.offsetHeight + 'px';
+            star.style.left = Math.random() * starsContainer.offsetWidth + 'px';
+            star.style.transform = `scale(${1 + Math.random() * 0.15})`;
+            starsContainer.appendChild(star);
+            stars.push(star);
+        }
+        if (window.innerWidth > 768) {
+            window.addEventListener('mousemove', (e) => {
+                const { clientX, clientY } = e;
+                stars.forEach(star => {
+                    const xMovement = Math.min(Math.max((clientX - window.innerWidth / 2) / 75, -50), 50);
+                    const yMovement = Math.min(Math.max((clientY - window.innerHeight / 2) / 75, -50), 50);
+                    star.style.transform = `translate(${xMovement}px, ${yMovement}px)`;
+                });
+            });
+        }
+    </script>
 
-    // Update the wager race standings every 90 seconds
-    setInterval(updateWagerRace, 90 * 1000);
-    // Update on boot
-    window.onload = updateWagerRace;
-  </script>
-
-  <!-- JavaScript for the starry background effect -->
-  <script>
-    // Create starry background effect
-    const starsContainer = document.querySelector('.stars-overlay');
-    const starsCount = 350;
-    const stars = [];
-    for (let i = 0; i < starsCount; i++) {
-      const star = document.createElement('div');
-      star.classList.add('star');
-      star.style.top = Math.random() * starsContainer.offsetHeight + 'px';
-      star.style.left = Math.random() * starsContainer.offsetWidth + 'px';
-      star.style.transform = `scale(${1 + Math.random() * 0.15})`;
-      starsContainer.appendChild(star);
-      stars.push(star);
-    }
-    if (window.innerWidth > 768) {
-      window.addEventListener('mousemove', (e) => {
-        const { clientX, clientY } = e;
-        stars.forEach(star => {
-          const xMovement = Math.min(Math.max((clientX - window.innerWidth / 2) / 75, -50), 50);
-          const yMovement = Math.min(Math.max((clientY - window.innerHeight / 2) / 75, -50), 50);
-          star.style.transform = `translate(${xMovement}px, ${yMovement}px)`;
-        });
-      });
-    }
-  </script>
 </body>
 </html>
