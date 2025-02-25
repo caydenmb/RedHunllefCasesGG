@@ -47,12 +47,8 @@
             margin-bottom: 30px;
         }
         @keyframes bounce {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-15px);
-            }
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
         }
         .button-container {
             display: flex;
@@ -88,9 +84,9 @@
         /* Podium styles for top 3 wagerers */
         .podium {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: flex-end;
-            gap: 40px;
+            gap: 20px;
             margin-bottom: 40px;
         }
         .medal {
@@ -208,11 +204,8 @@
             .container { min-height: auto !important; }
             .button-container { flex-direction: column !important; gap: 10px !important; }
             .button { max-width: 100% !important; width: auto !important; }
-            .podium {
-                flex-direction: row !important;
-                justify-content: space-around !important;
-                align-items: flex-end !important;
-            }
+            /* For very small screens, keep podium horizontal */
+            .podium { flex-direction: row !important; justify-content: center !important; gap: 10px !important; }
             .podium div { width: 30% !important; }
             .other-standings { grid-template-columns: 1fr !important; gap: 20px !important; }
         }
@@ -245,7 +238,6 @@
     </style>
 </head>
 <body>
-
     <!-- Starry background -->
     <div id="stars">
         <div class="stars-overlay"></div>
@@ -296,6 +288,20 @@
     <!-- JavaScript to populate the standings from API data -->
     <script>
         /**
+         * Utility function to mask the user's name for display.
+         * Only the first letter is shown, followed by asterisks.
+         *
+         * @param {string} name - The original name.
+         * @returns {string} - The masked name.
+         */
+        function maskName(name) {
+            if (typeof name === 'string' && name.length > 0) {
+                return name[0] + "******";
+            }
+            return "******";
+        }
+
+        /**
          * Function to update the wager race standings by fetching API data.
          * The API is expected to return an array of user objects.
          */
@@ -303,35 +309,36 @@
             fetch('/data')
                 .then(response => response.json())
                 .then(data => {
-                    console.log("Fetched data (full names logged):", data.map(u => u.name));
+                    // Log full names in the console for debugging
+                    console.log("Fetched full wager names:", data.map(u => u.name));
+
                     const top3Container = document.getElementById('top-3-standings');
                     const standingsContainer = document.getElementById('wager-standings');
                     top3Container.innerHTML = '';
                     standingsContainer.innerHTML = '';
 
-                    // Populate the top 3 in order: first on the left, second in the middle, third on the right.
-                    // Note: The live display shows the names as provided; you can mask them if needed.
+                    // Populate the top 3 with masked names for display
                     const podium = data.slice(0, 3);
                     top3Container.innerHTML = `
                         <div class="first">
-                            <h3>1st: ${podium[0].name}</h3>
+                            <h3>1st: ${maskName(podium[0].name)}</h3>
                             <p>Wager: ${podium[0].wager}</p>
                         </div>
                         <div class="second">
-                            <h3>2nd: ${podium[1].name}</h3>
+                            <h3>2nd: ${maskName(podium[1].name)}</h3>
                             <p>Wager: ${podium[1].wager}</p>
                         </div>
                         <div class="third">
-                            <h3>3rd: ${podium[2].name}</h3>
+                            <h3>3rd: ${maskName(podium[2].name)}</h3>
                             <p>Wager: ${podium[2].wager}</p>
                         </div>
                     `;
-                    // Populate positions 4 through 11
+                    // Populate positions 4 through 11 with masked names
                     const others = data.slice(3, 11);
                     others.forEach((user, index) => {
                         const div = document.createElement('div');
                         div.classList.add('standing');
-                        div.innerHTML = `<h3>${index + 4}th: ${user.name}</h3><p>Wager: ${user.wager}</p>`;
+                        div.innerHTML = `<h3>${index + 4}th: ${maskName(user.name)}</h3><p>Wager: ${user.wager}</p>`;
                         standingsContainer.appendChild(div);
                     });
                 })
@@ -340,9 +347,9 @@
                 });
         }
 
-        // Fetch data upon startup and every 90 seconds thereafter
-        setInterval(updateWagerRace, 90 * 1000);
+        // Fetch data on startup and every 90 seconds
         window.onload = updateWagerRace;
+        setInterval(updateWagerRace, 90 * 1000);
     </script>
 
     <!-- JavaScript for the starry background effect -->

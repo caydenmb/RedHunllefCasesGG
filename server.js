@@ -16,8 +16,7 @@ if (!fs.existsSync(logDir)) {
 // Parse JSON bodies if needed
 app.use(express.json());
 
-// --- Detailed Logging Middleware ---
-// Logs request details to the console and appends them as JSON to a daily log file.
+// Detailed Logging Middleware
 app.use((req, res, next) => {
     const logEntry = {
         time: new Date().toISOString(),
@@ -61,7 +60,7 @@ app.get('/', (req, res) => {
 });
 
 // API route to serve wager race data with full 11 spots.
-// In production, replace getAPIData() with your actual API call logic.
+// Replace getAPIData() with your actual API call logic in production.
 app.get('/data', (req, res) => {
     console.log('[DATA ROUTE] Request received at /data');
     getAPIData()
