@@ -240,6 +240,9 @@
             </a>
         </header>
 
+        <!-- Countdown Timer (ADDED) -->
+        <div id="countdown" style="font-size: 1.5em; font-weight: bold; margin: 30px 0;"></div>
+
         <!-- Sponsor message -->
         <div id="sponsor-message">
             <p>Support Redhunllef by visiting his sponsors below.</p>
@@ -296,14 +299,20 @@
                             <div class="second">
                                 <h3>2nd: ${podium[1].name}</h3>
                                 <p>Wager: ${podium[1].wager}</p>
+                                <!-- ADDED Prize line -->
+                                <p>Prize: $100</p>
                             </div>
                             <div class="first">
                                 <h3>1st: ${podium[0].name}</h3>
                                 <p>Wager: ${podium[0].wager}</p>
+                                <!-- ADDED Prize line -->
+                                <p>Prize: $300</p>
                             </div>
                             <div class="third">
                                 <h3>3rd: ${podium[2].name}</h3>
                                 <p>Wager: ${podium[2].wager}</p>
+                                <!-- ADDED Prize line -->
+                                <p>Prize: $100</p>
                             </div>
                         `;
                         // For the remaining standings (4th to 11th)
@@ -311,7 +320,19 @@
                         others.forEach((user, index) => {
                             const div = document.createElement('div');
                             div.classList.add('standing');
-                            div.innerHTML = `<h3>${index + 4}th: ${user.name}</h3><p>Wager: ${user.wager}</p>`;
+                            const actualRank = index + 4; // 4th place is index=0 in "others"
+                            let prizeLine = '';
+                            // ADDED Prize logic
+                            if (actualRank === 4) {
+                                prizeLine = '<p>Prize: $50</p>';
+                            } else if (actualRank === 5 || actualRank === 6) {
+                                prizeLine = '<p>Prize: $25</p>';
+                            }
+                            div.innerHTML = `
+                                <h3>${actualRank}th: ${user.name}</h3>
+                                <p>Wager: ${user.wager}</p>
+                                ${prizeLine}
+                            `;
                             standingsContainer.appendChild(div);
                         });
                     } else {
@@ -347,20 +368,38 @@
                 <div class="second">
                     <h3>2nd: ${placeholderData[1].name}</h3>
                     <p>Wager: ${placeholderData[1].wager}</p>
+                    <!-- ADDED Prize line -->
+                    <p>Prize: $100</p>
                 </div>
                 <div class="first">
                     <h3>1st: ${placeholderData[0].name}</h3>
                     <p>Wager: ${placeholderData[0].wager}</p>
+                    <!-- ADDED Prize line -->
+                    <p>Prize: $300</p>
                 </div>
                 <div class="third">
                     <h3>3rd: ${placeholderData[2].name}</h3>
                     <p>Wager: ${placeholderData[2].wager}</p>
+                    <!-- ADDED Prize line -->
+                    <p>Prize: $100</p>
                 </div>
             `;
             for (let i = 3; i < placeholderData.length; i++) {
                 const div = document.createElement('div');
                 div.classList.add('standing');
-                div.innerHTML = `<h3>${i + 1}th: ${placeholderData[i].name}</h3><p>Wager: ${placeholderData[i].wager}</p>`;
+                const rank = i + 1; 
+                let prizeLine = '';
+                // ADDED Prize logic
+                if (rank === 4) {
+                    prizeLine = '<p>Prize: $50</p>';
+                } else if (rank === 5 || rank === 6) {
+                    prizeLine = '<p>Prize: $25</p>';
+                }
+                div.innerHTML = `
+                    <h3>${rank}th: ${placeholderData[i].name}</h3>
+                    <p>Wager: ${placeholderData[i].wager}</p>
+                    ${prizeLine}
+                `;
                 standingsContainer.appendChild(div);
             }
         }
@@ -394,6 +433,33 @@
                 });
             });
         }
+    </script>
+
+    <!-- Countdown Timer Script (ADDED) -->
+    <script>
+      (function() {
+        // End date/time: 1 week after March 17 => March 24 (adjust hour/min if needed)
+        var endDate = new Date("Mar 24, 2025 00:00:00").getTime();
+
+        var timer = setInterval(function() {
+          var now = new Date().getTime();
+          var distance = endDate - now;
+
+          if (distance < 0) {
+            clearInterval(timer);
+            document.getElementById("countdown").textContent = "The race has ended!";
+            return;
+          }
+
+          var days = Math.floor(distance / (1000 * 60 * 60 * 24));
+          var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+          var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+          document.getElementById("countdown").textContent =
+            days + "d " + hours + "h " + minutes + "m " + seconds + "s";
+        }, 1000);
+      })();
     </script>
 
 </body>
