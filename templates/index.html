@@ -47,12 +47,8 @@
             margin-bottom: 30px;
         }
         @keyframes bounce {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-15px);
-            }
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
         }
         .button-container {
             display: flex;
@@ -223,6 +219,68 @@
             background: #ffffff;
             border-radius: 50%;
         }
+
+        /* ===============================================
+           POPUP FOR KICK.COM VIDEO (DRAG/CLOSE)
+           =============================================== */
+        #player-popup {
+            /* Visible by default; if you want hidden initially, use display:none */
+            display: block;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 320px;
+            height: 180px;
+            background: #000;
+            border: 1px solid #666;
+            border-radius: 6px;
+            overflow: hidden;
+            z-index: 9999;
+        }
+        #player-header {
+            background: #222;
+            color: #fff;
+            padding: 5px 10px;
+            cursor: move;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 30px;
+        }
+        #header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        #player-header span {
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        /* Buttons in the header */
+        #player-header button {
+            background: transparent;
+            border: none;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+        /* So the minimize button has a slightly smaller font size to differentiate */
+        #minimize-popup {
+            font-size: 1rem;
+        }
+
+        /* Minimized state */
+        #player-popup.minimized {
+            height: 30px; /* only show the header */
+        }
+        #player-popup.minimized iframe {
+            display: none;
+        }
+        #player-popup iframe {
+            width: 100%;
+            height: calc(100% - 30px); /* minus the header height */
+            border: none;
+        }
     </style>
 </head>
 <body>
@@ -240,9 +298,6 @@
             </a>
         </header>
 
-        <!-- Countdown Timer (ADDED) -->
-        <div id="countdown" style="font-size: 1.5em; font-weight: bold; margin: 30px 0;"></div>
-
         <!-- Sponsor message -->
         <div id="sponsor-message">
             <p>Support Redhunllef by visiting his sponsors below.</p>
@@ -250,14 +305,19 @@
 
         <!-- Sponsor buttons -->
         <div class="button-container">
-                <a href="https://shuffle.com/?r=Red" class="button">Shuffle.com</a>
-                <a href="https://cases.gg/r/RED" class="button">Cases.gg</a>
-                <a href="https://upgrader.com/r/RED" class="button">Upgrader.com</a>
+            <a href="https://shuffle.com/?r=Red" class="button">Shuffle.com</a>
+            <a href="https://cases.gg/r/RED" class="button">Cases.gg</a>
+            <a href="https://upgrader.com/r/RED" class="button">Upgrader.com</a>
         </div>
 
         <!-- Wager Race section -->
         <div class="wager-container">
             <h2 class="wager-title">Cases.gg Wager Race</h2>
+
+            <!-- Countdown below the Race title, with "Countdown:" label -->
+            <div style="margin: 10px 0; font-size: 1.2rem; font-weight: bold;">
+                Countdown: <span id="countdown"></span>
+            </div>
 
             <!-- Podium for top 3 wagerers -->
             <div class="podium" id="top-3-standings">
@@ -275,6 +335,29 @@
             <p>&copy; 2025 Redhunllef Livestream. All Rights Reserved.</p>
             <p>Built by <a href="https://kick.com/gingrsnaps" target="_blank">GingrSnaps</a></p>
         </footer>
+    </div>
+
+    <!-- POPUP DIV FOR KICK.COM -->
+    <div id="player-popup">
+        <div id="player-header">
+            <span>Live Stream</span>
+            <div id="header-buttons">
+                <!-- Pop-out button opens the stream in a new tab/window -->
+                <button id="popout-btn" title="Open in new tab">↗</button>
+                <!-- Minimize toggles a minimized class -->
+                <button id="minimize-popup" title="Minimize">–</button>
+                <!-- Close completely hides the popup -->
+                <button id="close-popup" title="Close">&times;</button>
+            </div>
+        </div>
+        <iframe
+            src="https://player.kick.com/redhunllef"
+            height="720"
+            width="1280"
+            frameborder="0"
+            scrolling="no"
+            allowfullscreen="true">
+        </iframe>
     </div>
 
     <!-- JavaScript to populate the standings from API data -->
@@ -299,19 +382,16 @@
                             <div class="second">
                                 <h3>2nd: ${podium[1].name}</h3>
                                 <p>Wager: ${podium[1].wager}</p>
-                                <!-- ADDED Prize line -->
                                 <p>Prize: $100</p>
                             </div>
                             <div class="first">
                                 <h3>1st: ${podium[0].name}</h3>
                                 <p>Wager: ${podium[0].wager}</p>
-                                <!-- ADDED Prize line -->
                                 <p>Prize: $300</p>
                             </div>
                             <div class="third">
                                 <h3>3rd: ${podium[2].name}</h3>
                                 <p>Wager: ${podium[2].wager}</p>
-                                <!-- ADDED Prize line -->
                                 <p>Prize: $100</p>
                             </div>
                         `;
@@ -322,7 +402,6 @@
                             div.classList.add('standing');
                             const actualRank = index + 4; // 4th place is index=0 in "others"
                             let prizeLine = '';
-                            // ADDED Prize logic
                             if (actualRank === 4) {
                                 prizeLine = '<p>Prize: $50</p>';
                             } else if (actualRank === 5 || actualRank === 6) {
@@ -346,7 +425,7 @@
                 });
         }
 
-        // Function to populate the standings with placeholder data if the API fetch fails.
+        // Fallback if the API fetch fails
         function populateWithPlaceholderData() {
             const placeholderData = [
                 { rank: 1, name: "P**********", wager: "$10,000.00" },
@@ -368,19 +447,16 @@
                 <div class="second">
                     <h3>2nd: ${placeholderData[1].name}</h3>
                     <p>Wager: ${placeholderData[1].wager}</p>
-                    <!-- ADDED Prize line -->
                     <p>Prize: $100</p>
                 </div>
                 <div class="first">
                     <h3>1st: ${placeholderData[0].name}</h3>
                     <p>Wager: ${placeholderData[0].wager}</p>
-                    <!-- ADDED Prize line -->
                     <p>Prize: $300</p>
                 </div>
                 <div class="third">
                     <h3>3rd: ${placeholderData[2].name}</h3>
                     <p>Wager: ${placeholderData[2].wager}</p>
-                    <!-- ADDED Prize line -->
                     <p>Prize: $100</p>
                 </div>
             `;
@@ -389,7 +465,6 @@
                 div.classList.add('standing');
                 const rank = i + 1; 
                 let prizeLine = '';
-                // ADDED Prize logic
                 if (rank === 4) {
                     prizeLine = '<p>Prize: $50</p>';
                 } else if (rank === 5 || rank === 6) {
@@ -404,7 +479,7 @@
             }
         }
 
-        // Update the wager race standings every 15 minutes.
+        // Update the wager race standings every 15 minutes
         setInterval(updateWagerRace, 15 * 60 * 1000);
         window.onload = updateWagerRace;
     </script>
@@ -435,10 +510,10 @@
         }
     </script>
 
-    <!-- Countdown Timer Script (ADDED) -->
+    <!-- Countdown Timer Script -->
     <script>
       (function() {
-        // End date/time: 1 week after March 17 => March 24 (adjust hour/min if needed)
+        // 1-week countdown from March 17 => March 24 (adjust hour/min if needed)
         var endDate = new Date("Mar 24, 2025 00:00:00").getTime();
 
         var timer = setInterval(function() {
@@ -459,6 +534,56 @@
           document.getElementById("countdown").textContent =
             days + "d " + hours + "h " + minutes + "m " + seconds + "s";
         }, 1000);
+      })();
+    </script>
+
+    <!-- DRAG AND CLOSE LOGIC FOR POPUP -->
+    <script>
+      (function() {
+        const popup = document.getElementById('player-popup');
+        const header = document.getElementById('player-header');
+        const closeBtn = document.getElementById('close-popup');
+        const minimizeBtn = document.getElementById('minimize-popup');
+        const popoutBtn = document.getElementById('popout-btn');
+
+        // Close the popup when user clicks "X"
+        closeBtn.addEventListener('click', () => {
+          popup.style.display = 'none';
+        });
+
+        // Minimize/restore
+        minimizeBtn.addEventListener('click', () => {
+          popup.classList.toggle('minimized');
+        });
+
+        // Open Kick stream in new tab
+        popoutBtn.addEventListener('click', () => {
+          window.open('https://kick.com/redhunllef', '_blank');
+        });
+
+        let offsetX, offsetY;
+        header.addEventListener('mousedown', startDrag);
+
+        function startDrag(e) {
+          // Don’t drag if we clicked on a button inside the header
+          if (e.target.tagName.toLowerCase() === 'button') return;
+          
+          // Calculate offset within the popup
+          offsetX = e.clientX - popup.offsetLeft;
+          offsetY = e.clientY - popup.offsetTop;
+          document.addEventListener('mousemove', drag);
+          document.addEventListener('mouseup', stopDrag);
+        }
+
+        function drag(e) {
+          popup.style.left = (e.clientX - offsetX) + 'px';
+          popup.style.top = (e.clientY - offsetY) + 'px';
+        }
+
+        function stopDrag() {
+          document.removeEventListener('mousemove', drag);
+          document.removeEventListener('mouseup', stopDrag);
+        }
       })();
     </script>
 
