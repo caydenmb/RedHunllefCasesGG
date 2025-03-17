@@ -247,16 +247,11 @@
             align-items: center;
             height: 30px;
         }
-        #header-buttons {
-            display: flex;
-            gap: 10px;
-        }
         #player-header span {
             font-size: 0.9rem;
             font-weight: bold;
         }
-        /* Buttons in the header */
-        #player-header button {
+        #close-popup {
             background: transparent;
             border: none;
             color: #fff;
@@ -264,21 +259,9 @@
             cursor: pointer;
             line-height: 1;
         }
-        /* So the minimize button has a slightly smaller font size to differentiate */
-        #minimize-popup {
-            font-size: 1rem;
-        }
-
-        /* Minimized state */
-        #player-popup.minimized {
-            height: 30px; /* only show the header */
-        }
-        #player-popup.minimized iframe {
-            display: none;
-        }
         #player-popup iframe {
             width: 100%;
-            height: calc(100% - 30px); /* minus the header height */
+            height: calc(100% - 30px); /* minus the header */
             border: none;
         }
     </style>
@@ -341,14 +324,7 @@
     <div id="player-popup">
         <div id="player-header">
             <span>Live Stream</span>
-            <div id="header-buttons">
-                <!-- Pop-out button opens the stream in a new tab/window -->
-                <button id="popout-btn" title="Open in new tab">↗</button>
-                <!-- Minimize toggles a minimized class -->
-                <button id="minimize-popup" title="Minimize">–</button>
-                <!-- Close completely hides the popup -->
-                <button id="close-popup" title="Close">&times;</button>
-            </div>
+            <button id="close-popup">&times;</button>
         </div>
         <iframe
             src="https://player.kick.com/redhunllef"
@@ -382,17 +358,20 @@
                             <div class="second">
                                 <h3>2nd: ${podium[1].name}</h3>
                                 <p>Wager: ${podium[1].wager}</p>
-                                <p>Prize: $100</p>
+                                <!-- Prize line changed to $200 -->
+                                <p>Prize: $200</p>
                             </div>
                             <div class="first">
                                 <h3>1st: ${podium[0].name}</h3>
                                 <p>Wager: ${podium[0].wager}</p>
-                                <p>Prize: $300</p>
+                                <!-- Prize line changed to $600 -->
+                                <p>Prize: $600</p>
                             </div>
                             <div class="third">
                                 <h3>3rd: ${podium[2].name}</h3>
                                 <p>Wager: ${podium[2].wager}</p>
-                                <p>Prize: $100</p>
+                                <!-- Prize line changed to $200 -->
+                                <p>Prize: $200</p>
                             </div>
                         `;
                         // For the remaining standings (4th to 11th)
@@ -402,10 +381,11 @@
                             div.classList.add('standing');
                             const actualRank = index + 4; // 4th place is index=0 in "others"
                             let prizeLine = '';
+                            // Updated logic to double the amounts
                             if (actualRank === 4) {
-                                prizeLine = '<p>Prize: $50</p>';
+                                prizeLine = '<p>Prize: $100</p>';
                             } else if (actualRank === 5 || actualRank === 6) {
-                                prizeLine = '<p>Prize: $25</p>';
+                                prizeLine = '<p>Prize: $50</p>';
                             }
                             div.innerHTML = `
                                 <h3>${actualRank}th: ${user.name}</h3>
@@ -425,7 +405,7 @@
                 });
         }
 
-        // Fallback if the API fetch fails
+        // Fallback if the API fetch fails.
         function populateWithPlaceholderData() {
             const placeholderData = [
                 { rank: 1, name: "P**********", wager: "$10,000.00" },
@@ -447,17 +427,17 @@
                 <div class="second">
                     <h3>2nd: ${placeholderData[1].name}</h3>
                     <p>Wager: ${placeholderData[1].wager}</p>
-                    <p>Prize: $100</p>
+                    <p>Prize: $200</p>
                 </div>
                 <div class="first">
                     <h3>1st: ${placeholderData[0].name}</h3>
                     <p>Wager: ${placeholderData[0].wager}</p>
-                    <p>Prize: $300</p>
+                    <p>Prize: $600</p>
                 </div>
                 <div class="third">
                     <h3>3rd: ${placeholderData[2].name}</h3>
                     <p>Wager: ${placeholderData[2].wager}</p>
-                    <p>Prize: $100</p>
+                    <p>Prize: $200</p>
                 </div>
             `;
             for (let i = 3; i < placeholderData.length; i++) {
@@ -466,9 +446,9 @@
                 const rank = i + 1; 
                 let prizeLine = '';
                 if (rank === 4) {
-                    prizeLine = '<p>Prize: $50</p>';
+                    prizeLine = '<p>Prize: $100</p>';
                 } else if (rank === 5 || rank === 6) {
-                    prizeLine = '<p>Prize: $25</p>';
+                    prizeLine = '<p>Prize: $50</p>';
                 }
                 div.innerHTML = `
                     <h3>${rank}th: ${placeholderData[i].name}</h3>
@@ -513,8 +493,8 @@
     <!-- Countdown Timer Script -->
     <script>
       (function() {
-        // 1-week countdown from March 17 => March 24 (adjust hour/min if needed)
-        var endDate = new Date("Mar 24, 2025 00:00:00").getTime();
+        // Moved to 1-week + 1 day => ends on March 25, 2025
+        var endDate = new Date("Mar 25, 2025 00:00:00").getTime();
 
         var timer = setInterval(function() {
           var now = new Date().getTime();
@@ -543,31 +523,16 @@
         const popup = document.getElementById('player-popup');
         const header = document.getElementById('player-header');
         const closeBtn = document.getElementById('close-popup');
-        const minimizeBtn = document.getElementById('minimize-popup');
-        const popoutBtn = document.getElementById('popout-btn');
 
         // Close the popup when user clicks "X"
         closeBtn.addEventListener('click', () => {
           popup.style.display = 'none';
         });
 
-        // Minimize/restore
-        minimizeBtn.addEventListener('click', () => {
-          popup.classList.toggle('minimized');
-        });
-
-        // Open Kick stream in new tab
-        popoutBtn.addEventListener('click', () => {
-          window.open('https://kick.com/redhunllef', '_blank');
-        });
-
         let offsetX, offsetY;
         header.addEventListener('mousedown', startDrag);
 
         function startDrag(e) {
-          // Don’t drag if we clicked on a button inside the header
-          if (e.target.tagName.toLowerCase() === 'button') return;
-          
           // Calculate offset within the popup
           offsetX = e.clientX - popup.offsetLeft;
           offsetY = e.clientY - popup.offsetTop;
